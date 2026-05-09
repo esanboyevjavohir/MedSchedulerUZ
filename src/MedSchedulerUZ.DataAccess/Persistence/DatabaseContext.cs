@@ -24,7 +24,6 @@ namespace MedSchedulerUZ.DataAccess.Persistence
         public DbSet<LeaveRequest> LeaveRequests { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<OtpCode> OtpCodes { get; set; }
-        public DbSet<Role> Roles { get; set; }
         public DbSet<Schedule> Schedules { get; set; }
         public DbSet<Shift> Shifts { get; set; }
         public DbSet<ShiftSwap> ShiftSwaps { get; set; }

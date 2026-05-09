@@ -9,7 +9,8 @@ namespace MedSchedulerUZ.Application.MappingProfiles
         public DepartmentMapping()
         {
             CreateMap<Department, DepartmentResponseModel>()
-                .ForMember(dest => dest.HospitalName, opt => opt.Ignore()); // Manually set qilyapmiz service'da
+                .ForMember(dest => dest.HospitalName, 
+                    opt => opt.MapFrom(src => src.Hospital.Name)); 
 
             CreateMap<CreateDepartmentModel, Department>();
         }

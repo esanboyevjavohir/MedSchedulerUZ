@@ -6,7 +6,6 @@ namespace MedSchedulerUZ.Core.Entities
     {
         public Guid HospitalId { get; set; }
         public string Name { get; set; }
-        public string Code { get; set; } // "CARDIO", "SURG", "ICU"
         public int MinStaffRequired { get; set; } // Minimum kerakli xodim soni
         public bool IsActive { get; set; } = true; // Bo'lim xozir faolmi 
 

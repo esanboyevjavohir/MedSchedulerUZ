@@ -26,13 +26,12 @@ namespace MedSchedulerUZ.Application.Services.Implement
                 return ApiResult<CreateDepartmentResponseModel>.Failure(["Kasalxona topilmadi"]);
 
             var exists = await _context.Departments
-                .AnyAsync(d => d.Code == model.Code && d.HospitalId == model.HospitalId);
+                .AnyAsync(d => d.Name == model.Name && d.HospitalId == model.HospitalId);
             if (exists)
-                return ApiResult<CreateDepartmentResponseModel>.Failure(["Bu kodli bo'lim allaqachon mavjud"]);
+                return ApiResult<CreateDepartmentResponseModel>.Failure(["Bu nomli bo'lim allaqachon mavjud"]);
 
             var department = _mapper.Map<Department>(model);
             department.IsActive = true;
-
             await _context.Departments.AddAsync(department);
             await _context.SaveChangesAsync();
 
@@ -47,11 +46,9 @@ namespace MedSchedulerUZ.Application.Services.Implement
                 return ApiResult<UpdateDepartmentResponseModel>.Failure(["Bo'lim topilmadi"]);
 
             department.Name = model.Name;
-            department.Code = model.Code;
             department.MinStaffRequired = model.MinStaffRequired;
             department.IsActive = model.IsActive;
             department.UpdatedOn = DateTime.UtcNow;
-
             await _context.SaveChangesAsync();
 
             var response = new UpdateDepartmentResponseModel { Id = department.Id };
@@ -68,7 +65,6 @@ namespace MedSchedulerUZ.Application.Services.Implement
                 return ApiResult<DepartmentResponseModel>.Failure(["Bo'lim topilmadi"]);
 
             var response = _mapper.Map<DepartmentResponseModel>(department);
-            response.HospitalName = department.Hospital.Name;
             return ApiResult<DepartmentResponseModel>.Success(response);
         }
 
@@ -82,7 +78,6 @@ namespace MedSchedulerUZ.Application.Services.Implement
             var response = departments.Select(d =>
             {
                 var dto = _mapper.Map<DepartmentResponseModel>(d);
-                dto.HospitalName = d.Hospital.Name;
                 return dto;
             }).ToList();
 
@@ -99,7 +94,6 @@ namespace MedSchedulerUZ.Application.Services.Implement
             var response = departments.Select(d =>
             {
                 var dto = _mapper.Map<DepartmentResponseModel>(d);
-                dto.HospitalName = d.Hospital.Name;
                 return dto;
             }).ToList();
 

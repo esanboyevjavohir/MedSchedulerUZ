@@ -21,6 +21,10 @@ namespace MedSchedulerUZ.Application.Services.Implement
 
         public async Task<ApiResult<CreateSpecializationResponseModel>> CreateAsync(CreateSpecializationModel model)
         {
+            var department = await _context.Departments.FirstOrDefaultAsync(d => d.Id == model.DepartmentId);
+            if (department is null)
+                return ApiResult<CreateSpecializationResponseModel>.Failure(["Bo'lim topilmadi"]);
+
             var exists = await _context.Specializations
                 .AnyAsync(s => s.Name == model.Name && s.IsActive);
             if (exists)
@@ -43,9 +47,7 @@ namespace MedSchedulerUZ.Application.Services.Implement
                 return ApiResult<UpdateSpecializationResponseModel>.Failure(["Mutaxassislik topilmadi"]);
 
             specialization.Name = model.Name;
-            specialization.Code = model.Code;
             specialization.IsActive = model.IsActive;
-            specialization.UpdatedOn = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 
@@ -55,7 +57,10 @@ namespace MedSchedulerUZ.Application.Services.Implement
 
         public async Task<ApiResult<SpecializationResponseModel>> GetByIdAsync(Guid id)
         {
-            var specialization = await _context.Specializations.FirstOrDefaultAsync(s => s.Id == id);
+            var specialization = await _context.Specializations
+                .Include(s => s.Department)
+                .FirstOrDefaultAsync(s => s.Id == id);
+
             if (specialization is null)
                 return ApiResult<SpecializationResponseModel>.Failure(["Mutaxassislik topilmadi"]);
 
@@ -66,6 +71,7 @@ namespace MedSchedulerUZ.Application.Services.Implement
         public async Task<ApiResult<List<SpecializationResponseModel>>> GetAllAsync()
         {
             var specializations = await _context.Specializations
+                .Include(s => s.Department)
                 .Where(s => s.IsActive)
                 .ToListAsync();
 
@@ -80,7 +86,6 @@ namespace MedSchedulerUZ.Application.Services.Implement
                 return ApiResult<bool>.Failure(["Mutaxassislik topilmadi"]);
 
             specialization.IsActive = false;
-            specialization.UpdatedOn = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 

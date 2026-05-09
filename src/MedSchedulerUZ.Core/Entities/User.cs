@@ -7,9 +7,9 @@ namespace MedSchedulerUZ.Core.Entities
     {
         public Guid HospitalId { get; set; }
         public Guid? DepartmentId { get; set; }
-        public Guid RoleId { get; set; }
+        public UserRole RoleType { get; set; }
         public Guid? SpecializationId { get; set; }
-        public string FullName { get; set; }       
+        public string FullName { get; set; }
         public string PhoneNumber { get; set; }
         public string Email { get; set; }
         public string PasswordHash { get; set; }
@@ -20,14 +20,10 @@ namespace MedSchedulerUZ.Core.Entities
         public DateTime CreatedOn { get; set; }
         public DateTime? UpdatedOn { get; set; }
 
-        // Tezkor rol tekshirish uchun
-        public UserRole RoleType => Role?.RoleType ?? UserRole.Employee;
-
         // Navigation properties
         public Hospital Hospital { get; set; }
-        public Department Department { get; set; }
-        public Role Role { get; set; }
-        public Specialization Specialization { get; set; }
+        public Department? Department { get; set; }
+        public Specialization? Specialization { get; set; }
         public ICollection<OtpCode> OtpCodes { get; set; } = new List<OtpCode>();
         public ICollection<Certification> Certifications { get; set; } = new List<Certification>();
         public ICollection<Shift> Shifts { get; set; } = new List<Shift>();

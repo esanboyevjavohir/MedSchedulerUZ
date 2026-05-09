@@ -34,6 +34,15 @@ namespace MedSchedulerUZ.Application.Services.Implement
             if (department is null)
                 return ApiResult<CreateShiftResponseModel>.Failure(["Bo'lim topilmadi"]);
 
+            if (user.SpecializationId.HasValue)
+            {
+                var specialization = await _context.Specializations
+                    .FirstOrDefaultAsync(s => s.Id == user.SpecializationId);
+                if (specialization?.DepartmentId != model.DepartmentId)
+                    return ApiResult<CreateShiftResponseModel>.Failure(
+                        ["Xodim faqat o'z mutaxassisligiga mos bo'limga tayinlanishi mumkin"]);
+            }
+
             // Xodim shu kunda boshqa smenasi bormi tekshir
             var conflict = await _context.Shifts.AnyAsync(s =>
                 s.UserId == model.UserId &&
@@ -81,8 +90,6 @@ namespace MedSchedulerUZ.Application.Services.Implement
                 return ApiResult<ShiftResponseModel>.Failure(["Smena topilmadi"]);
 
             var response = _mapper.Map<ShiftResponseModel>(shift);
-            response.UserFullName = shift.User.FullName;
-            response.DepartmentName = shift.Department.Name;
             return ApiResult<ShiftResponseModel>.Success(response);
         }
 
@@ -96,8 +103,6 @@ namespace MedSchedulerUZ.Application.Services.Implement
             var response = shifts.Select(s =>
             {
                 var dto = _mapper.Map<ShiftResponseModel>(s);
-                dto.UserFullName = s.User.FullName;
-                dto.DepartmentName = s.Department.Name;
                 return dto;
             }).ToList();
 
@@ -116,8 +121,6 @@ namespace MedSchedulerUZ.Application.Services.Implement
             var response = shifts.Select(s =>
             {
                 var dto = _mapper.Map<ShiftResponseModel>(s);
-                dto.UserFullName = s.User.FullName;
-                dto.DepartmentName = s.Department.Name;
                 return dto;
             }).ToList();
 
@@ -136,8 +139,6 @@ namespace MedSchedulerUZ.Application.Services.Implement
             var response = shifts.Select(s =>
             {
                 var dto = _mapper.Map<ShiftResponseModel>(s);
-                dto.UserFullName = s.User.FullName;
-                dto.DepartmentName = s.Department.Name;
                 return dto;
             }).ToList();
 

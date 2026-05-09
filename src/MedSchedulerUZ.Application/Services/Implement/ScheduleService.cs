@@ -72,8 +72,6 @@ namespace MedSchedulerUZ.Application.Services.Implement
                 return ApiResult<ScheduleResponseModel>.Failure(["Jadval topilmadi"]);
 
             var response = _mapper.Map<ScheduleResponseModel>(schedule);
-            response.HospitalName = schedule.Hospital.Name;
-            response.DepartmentName = schedule.Department.Name;
             return ApiResult<ScheduleResponseModel>.Success(response);
         }
 
@@ -87,8 +85,6 @@ namespace MedSchedulerUZ.Application.Services.Implement
             var response = schedules.Select(s =>
             {
                 var dto = _mapper.Map<ScheduleResponseModel>(s);
-                dto.HospitalName = s.Hospital.Name;
-                dto.DepartmentName = s.Department.Name;
                 return dto;
             }).ToList();
 
@@ -120,7 +116,8 @@ namespace MedSchedulerUZ.Application.Services.Implement
             if (schedule is null)
                 return ApiResult<bool>.Failure(["Jadval topilmadi"]);
 
-            _context.Schedules.Remove(schedule);
+            schedule.Status = ScheduleStatus.Archived;
+            schedule.UpdatedOn = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
             return ApiResult<bool>.Success(true);

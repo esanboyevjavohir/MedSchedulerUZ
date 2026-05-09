@@ -55,29 +55,23 @@ namespace MedSchedulerUZ.Application.Services.Implement
         public async Task<ApiResult<LoginResponseModel>> LoginAsync(LoginUserModel loginModel)
         {
             var user = await _context.Users
-                .Include(u => u.Role)        // RoleType uchun kerak
-                .Include(u => u.OtpCodes)
+                .Include(u => u.OtpCodes)  // Role Include olib tashlandi
                 .FirstOrDefaultAsync(u => u.Email == loginModel.Email && u.IsActive);
-
             if (user is null)
                 return ApiResult<LoginResponseModel>.Failure(["Email yoki parol noto'g'ri"]);
 
-            // SuperAdmin OTP tasdiqlamasdan kira oladi
             if (user.RoleType != UserRole.SuperAdmin)
             {
                 var isEmailVerified = user.OtpCodes
                     .Any(o => o.Status == OtpCodeStatus.Verified);
-
                 if (!isEmailVerified)
                     return ApiResult<LoginResponseModel>.Failure(["Email tasdiqlanmagan"]);
             }
-
             if (!_passwordHasher.Verify(user.PasswordHash, loginModel.Password, user.Salt))
                 return ApiResult<LoginResponseModel>.Failure(["Email yoki parol noto'g'ri"]);
 
             var accessToken = _jwtTokenHandler.GenerateAccessToken(user);
             var refreshToken = _jwtTokenHandler.GenerateRefreshToken();
-
             user.RefreshToken = refreshToken;
             user.RefreshTokenExpireDate = DateTime.UtcNow.AddDays(_userSettings.RefreshTokenExpirationDays);
             await _context.SaveChangesAsync();
@@ -96,16 +90,26 @@ namespace MedSchedulerUZ.Application.Services.Implement
         {
             var exists = await _context.Users
                 .AnyAsync(u => u.Email == model.Email);
-
             if (exists)
                 return ApiResult<CreateUserResponseModel>.Failure(["Bu email allaqachon ro'yxatdan o'tgan"]);
 
-            var user = _mapper.Map<User>(model);
+            if (model.DepartmentId.HasValue)
+            {
+                var department = await _context.Departments.FirstOrDefaultAsync(d => d.Id == model.DepartmentId);
+                if (department is null)
+                    return ApiResult<CreateUserResponseModel>.Failure(["Bo'lim topilmadi"]);
+            }
 
-            // Salt generatsiya qilinadi va hash saqlanadi
+            if (model.SpecializationId.HasValue)
+            {
+                var specialization = await _context.Specializations.FirstOrDefaultAsync(s => s.Id == model.SpecializationId);
+                if (specialization is null)
+                    return ApiResult<CreateUserResponseModel>.Failure(["Mutaxassislik topilmadi"]);
+            }
+
+            var user = _mapper.Map<User>(model);
             user.Salt = GenerateSalt();
             user.PasswordHash = _passwordHasher.Encrypt(model.Password, user.Salt);
-            user.EmployeeCode = GenerateEmployeeCode();
 
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
@@ -117,10 +121,8 @@ namespace MedSchedulerUZ.Application.Services.Implement
         public async Task<ApiResult<UserResponseModel>> GetByIdAsync(Guid id)
         {
             var user = await _context.Users
-                .Include(u => u.Role)
-                .Include(u => u.Specialization)
+                .Include(u => u.Specialization)  // Role Include olib tashlandi
                 .FirstOrDefaultAsync(u => u.Id == id);
-
             if (user is null)
                 return ApiResult<UserResponseModel>.Failure(["Foydalanuvchi topilmadi"]);
 
@@ -131,8 +133,7 @@ namespace MedSchedulerUZ.Application.Services.Implement
         public async Task<ApiResult<List<UserResponseModel>>> GetAllAsync()
         {
             var users = await _context.Users
-                .Include(u => u.Role)
-                .Include(u => u.Specialization)
+                .Include(u => u.Specialization)  // Role Include olib tashlandi
                 .Where(u => u.IsActive)
                 .ToListAsync();
 
@@ -159,11 +160,6 @@ namespace MedSchedulerUZ.Application.Services.Implement
             using var rng = RandomNumberGenerator.Create();
             rng.GetBytes(bytes);
             return Convert.ToBase64String(bytes);
-        }
-
-        private string GenerateEmployeeCode()
-        {
-            return "EMP-" + Guid.NewGuid().ToString("N")[..6].ToUpper();
         }
 
         public async Task<ApiResult<bool>> SendOtpCode(Guid userId)

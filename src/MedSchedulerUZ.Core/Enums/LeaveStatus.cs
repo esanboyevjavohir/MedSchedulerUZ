@@ -2,8 +2,8 @@
 {
     public enum LeaveStatus
     {
-        Pending = 1,
-        Approved = 2,
-        Rejected = 3
+        Pending = 1, // ko'rib chiqilmoqda
+        Approved = 2, // tasdiqlangan
+        Rejected = 3 // rad etilgan
     }
 }

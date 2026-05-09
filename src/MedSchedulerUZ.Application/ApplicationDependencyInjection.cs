@@ -39,7 +39,6 @@ namespace MedSchedulerUZ.Application
             services.AddScoped<IDepartmentService, DepartmentService>();
             services.AddScoped<IScheduleService, ScheduleService>();
             services.AddScoped<IHospitalService, HospitalService>();
-            services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IValidator<CreateUserModel>, CreateUserValidator>();
             services.AddScoped<IValidator<ResetPasswordModel>, ResetPasswordValidator>();
         }

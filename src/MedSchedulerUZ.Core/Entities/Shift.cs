@@ -13,8 +13,9 @@ namespace MedSchedulerUZ.Core.Entities
         public TimeSpan EndTime { get; set; }
         public ShiftType ShiftType { get; set; }
         public ShiftStatus Status { get; set; } = ShiftStatus.Scheduled; // smena statusi
-        public bool IsOnCall { get; set; } = false;
+        public bool IsOnCall { get; set; } = false; // xodim navbatchi sifatida tayinlanganmi
         public string? QrToken { get; set; } // xodim davomat uchun scan qiladigan unikal QR kod tokeni
+                                             // Har smena uchun alohida generatsiya qilinadi.
         public DateTime CreatedOn { get; set; }
         public DateTime? UpdatedOn { get; set; }
 

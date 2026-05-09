@@ -10,8 +10,6 @@ namespace MedSchedulerUZ.Core.Entities
         public Guid DepartmentId { get; set; }
         public DateTime WeekStart { get; set; }
         public DateTime WeekEnd { get; set; }
-        public int Month { get; set; }
-        public int Year { get; set; }
         public ScheduleStatus Status { get; set; } = ScheduleStatus.Draft;
         public Guid CreatedBy { get; set; } // bu jadval kim tomonidan tuzilgan — HospitalAdmin yoki DeptHead
         public DateTime CreatedOn { get; set; }

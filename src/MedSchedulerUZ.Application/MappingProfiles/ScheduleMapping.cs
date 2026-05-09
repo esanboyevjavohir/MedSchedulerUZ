@@ -9,8 +9,10 @@ namespace MedSchedulerUZ.Application.MappingProfiles
         public ScheduleMapping()
         {
             CreateMap<Schedule, ScheduleResponseModel>()
-                .ForMember(dest => dest.HospitalName, opt => opt.Ignore())
-                .ForMember(dest => dest.DepartmentName, opt => opt.Ignore());
+                .ForMember(dest => dest.HospitalName, 
+                    opt => opt.MapFrom(src => src.Hospital.Name))
+                .ForMember(dest => dest.DepartmentName, 
+                    opt => opt.MapFrom(src => src.Department.Name));
             CreateMap<CreateScheduleModel, Schedule>();
         }
     }
