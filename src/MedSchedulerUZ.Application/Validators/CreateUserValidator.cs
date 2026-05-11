@@ -33,15 +33,6 @@ namespace MedSchedulerUZ.Application.Validators
                 .MinimumLength(13).WithMessage("PhoneNumber must be at least 13 characters long")
                 .Matches(@"^\+").WithMessage("PhoneNumber must start with '+'")
                 .Matches(@"^\+\d+$").WithMessage("PhoneNumber must contain only digits after '+'");
-
-            RuleFor(x => x.Password)
-                .NotEmpty().WithMessage("Password cannot be empty")
-                .MinimumLength(8).WithMessage("Password must be at least 8 characters long")
-                .Matches("[A-Z]").WithMessage("Password must contain at least one uppercase letter")
-                .Matches("[a-z]").WithMessage("Password must contain at least one lowercase letter")
-                .Matches("[0-9]").WithMessage("Password must contain at least one number")
-                .Matches("[^a-zA-Z0-9]").WithMessage
-                ("Password must contain at least one special character");
         }
 
         private bool EmailIsUnique(string email)
