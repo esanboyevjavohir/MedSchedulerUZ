@@ -20,6 +20,16 @@ namespace MedSchedulerUZ.Application.Services.Implement
             _mapper = mapper;
         }
 
+        public async Task<ApiResult<string>> GetQrTokenAsync(Guid shiftId)
+        {
+            var shift = await _context.Shifts
+                .FirstOrDefaultAsync(s => s.Id == shiftId);
+            if (shift is null)
+                return ApiResult<string>.Failure(["Smena topilmadi"]);
+
+            return ApiResult<string>.Success(shift.QrToken);
+        }
+
         public async Task<ApiResult<CreateShiftResponseModel>> CreateAsync(CreateShiftModel model)
         {
             var schedule = await _context.Schedules.FirstOrDefaultAsync(s => s.Id == model.ScheduleId);

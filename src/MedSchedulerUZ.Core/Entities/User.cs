@@ -5,7 +5,7 @@ namespace MedSchedulerUZ.Core.Entities
 {
     public class User : BaseEntity, IAuditedEntity
     {
-        public Guid HospitalId { get; set; }
+        public Guid? HospitalId { get; set; }
         public Guid? DepartmentId { get; set; }
         public UserRole RoleType { get; set; }
         public Guid? SpecializationId { get; set; }
@@ -17,6 +17,8 @@ namespace MedSchedulerUZ.Core.Entities
         public bool IsActive { get; set; } = true;
         public string? RefreshToken { get; set; }
         public DateTime? RefreshTokenExpireDate { get; set; }
+        public string? ResetPasswordToken { get; set; }
+        public DateTime? ResetPasswordTokenExpiry { get; set; }
         public DateTime CreatedOn { get; set; }
         public DateTime? UpdatedOn { get; set; }
 

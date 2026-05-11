@@ -12,6 +12,7 @@ namespace MedSchedulerUZ.Core.Entities
         public SwapStatus Status { get; set; } = SwapStatus.Pending;
         public string Reason { get; set; } // smena almashish sababi. Masalan: "Kasal bo'lib qoldim"
         public Guid? ApprovedBy { get; set; } // so'rovni kim tasdiqlagan — HospitalAdmin yoki DeptHead
+        public DateTime Deadline { get; set; }
         public DateTime CreatedOn { get; set; }
         public DateTime? ApprovedAt { get; set; } // tasdiqlangan vaqt
 

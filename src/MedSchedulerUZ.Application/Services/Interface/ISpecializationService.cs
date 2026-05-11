@@ -9,6 +9,5 @@ namespace MedSchedulerUZ.Application.Services.Interface
         Task<ApiResult<UpdateSpecializationResponseModel>> UpdateAsync(Guid id, UpdateSpecializationModel model);
         Task<ApiResult<SpecializationResponseModel>> GetByIdAsync(Guid id);
         Task<ApiResult<List<SpecializationResponseModel>>> GetAllAsync();
-        Task<ApiResult<bool>> DeleteAsync(Guid id);
     }
 }

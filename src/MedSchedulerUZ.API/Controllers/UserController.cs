@@ -1,6 +1,8 @@
-﻿using MedSchedulerUZ.Application.Models;
+﻿using MedSchedulerUZ.Application.Helpers.GenerateJWT;
+using MedSchedulerUZ.Application.Models;
 using MedSchedulerUZ.Application.Models.User;
 using MedSchedulerUZ.Application.Services.Interface;
+using MedSchedulerUZ.Core.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,115 +17,149 @@ namespace MedSchedulerUZ.API.Controllers
             _userService = userService;
         }
 
-        [HttpPost("Login")]
+        [HttpPost("login")]
         [AllowAnonymous]
-        public async Task<IActionResult> UserLoginAsync(LoginUserModel loginUser)
+        public async Task<IActionResult> Login([FromBody] LoginUserModel loginUser)
         {
             var result = await _userService.LoginAsync(loginUser);
-
             if (!result.Succedded)
-            {
-                if (result.Errors.Contains("User not found"))
-                    return NotFound(result);
-                if (result.Errors.Contains("Invalid password"))
-                    return Unauthorized(result);
-
                 return BadRequest(result);
-            }
-
             return Ok(result);
         }
 
-        [HttpPost("Registration")]
-        [AllowAnonymous]
-        public async Task<ActionResult<CreateUserResponseModel>> UserSignUpAsync(
-            [FromForm] CreateUserModel createUserModel)
+        [HttpPost("register")]
+        [Authorize(Roles = "DeptHead,HospitalAdmin,SuperAdmin")]
+        public async Task<IActionResult> Register([FromBody] CreateUserModel model)
         {
-            var create = await _userService.RegisterAsync(createUserModel);
-            if (!create.Succedded)
-                return BadRequest(create);
-
-            return Created("", create);
+            var result = await _userService.RegisterAsync(model);
+            if (!result.Succedded)
+                return BadRequest(result);
+            return Ok(result);
         }
 
-        [HttpPost("SendOtpCode/{userId}")]
+        [HttpPost("send-otp/{userId}")]
         [AllowAnonymous]
-        public async Task<IActionResult> SendOtpCodeAsync(Guid userId)
+        public async Task<IActionResult> SendOtpCode(Guid userId)
         {
             var result = await _userService.SendOtpCode(userId);
-
             if (!result.Succedded)
-            {
-                if (result.Errors.Contains("User not found"))
-                    return NotFound(result);
-
-                if (result.Errors.Contains("Failed to send OTP email"))
-                    return StatusCode(500, result);
-
                 return BadRequest(result);
-            }
-
             return Ok(result);
         }
 
-        [HttpPost("VerifyOtpCode")]
-        public async Task<ApiResult<bool>> VerifyOtpCodeAsync(string otpCode, Guid userId)
+        [HttpPost("verify-otp")]
+        [AllowAnonymous]
+        public async Task<IActionResult> VerifyOtpCode(string otpCode, Guid userId)
         {
             var result = await _userService.VerifyOtpCode(otpCode, userId);
-            return result;
+            if (!result.Succedded)
+                return BadRequest(result);
+            return Ok(result);
         }
 
-        [HttpGet("GetById/{id}")]
-        public async Task<IActionResult> GetUser([FromRoute] Guid id)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            try
-            {
-                var res = await _userService.GetByIdAsync(id);
-                return res == null ? NotFound() : Ok(res);
-            }
-            catch (Exception ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
-        }
-
-        [HttpGet("GetAllUser")]
+        [HttpPut("profile")]
         [Authorize]
-        public async Task<IActionResult> GetAllUsers()
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileModel model)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            try
-            {
-                var res = await _userService.GetAllAsync();
-                return res == null ? NotFound() : Ok(res);
-            }
-            catch (Exception ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
+            var currentUserId = Guid.Parse(User.FindFirst(CustomClaimNames.Id)!.Value);
+            var result = await _userService.UpdateProfileAsync(currentUserId, model);
+            if (!result.Succedded)
+                return BadRequest(result);
+            return Ok(result);
         }
 
-        [HttpDelete("Delete/{id}")]
+        [HttpPut("change-password")]
         [Authorize]
-        public async Task<IActionResult> DeleteUser([FromRoute] Guid id)
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordModel model)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            var currentUserId = Guid.Parse(User.FindFirst(CustomClaimNames.Id)!.Value);
+            var result = await _userService.ChangePasswordAsync(currentUserId, model);
+            if (!result.Succedded)
+                return BadRequest(result);
+            return Ok(result);
+        }
 
-            try
-            {
-                var res = await _userService.DeleteUserAsync(id);
-                return res == null ? NotFound() : Ok(res);
-            }
-            catch (Exception ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
+        [HttpGet("my-profile")]
+        [Authorize]
+        public async Task<IActionResult> GetMyProfile()
+        {
+            var currentUserId = Guid.Parse(User.FindFirst(CustomClaimNames.Id)!.Value);
+            var result = await _userService.GetMeAsync(currentUserId);
+            return Ok(result);
+        }
+
+        [HttpPost("resend-otp/{userId}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResendOtpCode(Guid userId)
+        {
+            var result = await _userService.ResendOtpCode(userId);
+            if (!result.Succedded)
+                return BadRequest(result);
+            return Ok(result);
+        }
+
+        [HttpPost("forgot-password")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordModel model)
+        {
+            var result = await _userService.ForgotPasswordAsync(model.Email);
+            if (!result.Succedded)
+                return BadRequest(result);
+            return Ok(result);
+        }
+
+        [HttpPost("reset-password")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordModel model)
+        {
+            var result = await _userService.ResetPasswordAsync(model);
+            if (!result.Succedded)
+                return BadRequest(result);
+            return Ok(result);
+        }
+
+        [HttpPost("refresh-token")]
+        [AllowAnonymous]
+        public async Task<IActionResult> RefreshToken(Guid id, string refreshToken)
+        {
+            var result = await _userService.ValidateAndRefreshToken(id, refreshToken);
+            if (!result.Succedded)
+                return BadRequest(result);
+            return Ok(result);
+        }
+
+        [HttpGet("{id}")]
+        [Authorize(Roles = "Employee,DeptHead,HospitalAdmin,SuperAdmin")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            var currentUserId = Guid.Parse(User.FindFirst(CustomClaimNames.Id)!.Value);
+            var currentUserRole = User.FindFirst(CustomClaimNames.Role)!.Value;
+
+            if (currentUserRole == UserRole.Employee.ToString() && id != currentUserId)
+                return Forbid();
+
+            var result = await _userService.GetByIdAsync(id);
+            if (!result.Succedded)
+                return NotFound(result);
+            return Ok(result);
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "DeptHead,HospitalAdmin,SuperAdmin")]
+        public async Task<IActionResult> GetAll()
+        {
+            var result = await _userService.GetAllAsync();
+            return Ok(result);
+        }
+
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "DeptHead,HospitalAdmin,SuperAdmin")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var result = await _userService.DeleteUserAsync(id);
+            if (!result.Succedded)
+                return NotFound(result);
+            return Ok(result);
         }
     }
 }

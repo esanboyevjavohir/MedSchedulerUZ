@@ -19,6 +19,8 @@ namespace MedSchedulerUZ.Application.MappingProfiles
             CreateMap<CreateUserModel, User>()
                 .ForMember(dest => dest.PasswordHash,
                         opt => opt.Ignore())
+                .ForMember(dest => dest.Salt, 
+                        opt => opt.Ignore())
                 .ForMember(dest => dest.IsActive,
                         opt => opt.MapFrom(src => true));
         }

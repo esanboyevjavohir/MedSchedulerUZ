@@ -78,18 +78,5 @@ namespace MedSchedulerUZ.Application.Services.Implement
             return ApiResult<List<SpecializationResponseModel>>.Success(
                 _mapper.Map<List<SpecializationResponseModel>>(specializations));
         }
-
-        public async Task<ApiResult<bool>> DeleteAsync(Guid id)
-        {
-            var specialization = await _context.Specializations.FirstOrDefaultAsync(s => s.Id == id);
-            if (specialization is null)
-                return ApiResult<bool>.Failure(["Mutaxassislik topilmadi"]);
-
-            specialization.IsActive = false;
-
-            await _context.SaveChangesAsync();
-
-            return ApiResult<bool>.Success(true);
-        }
     }
 }

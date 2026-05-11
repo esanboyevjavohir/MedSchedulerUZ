@@ -5,6 +5,7 @@ namespace MedSchedulerUZ.Application.Services.Interface
 {
     public interface IShiftService
     {
+        Task<ApiResult<string>> GetQrTokenAsync(Guid shiftId);
         Task<ApiResult<CreateShiftResponseModel>> CreateAsync(CreateShiftModel model);
         Task<ApiResult<UpdateShiftResponseModel>> UpdateAsync(Guid id, UpdateShiftModel model);
         Task<ApiResult<ShiftResponseModel>> GetByIdAsync(Guid id);

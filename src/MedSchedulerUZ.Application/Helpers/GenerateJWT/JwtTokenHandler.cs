@@ -40,31 +40,6 @@ namespace MedSchedulerUZ.Application.Helpers.GenerateJWT
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public string GenerateAccessToken(User user, string sessionToken)
-        {
-            var claims = new List<Claim>
-            {
-                new Claim(CustomClaimNames.Id , user.Id.ToString()),
-                new Claim(CustomClaimNames.Email, user.Email),
-                new Claim(CustomClaimNames.Role , user.RoleType.ToString())
-            };
-
-            var authSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(this.jwtOption.SecretKey));
-
-            var jwtToken = new JwtSecurityToken(
-                issuer: this.jwtOption.Issuer,
-                audience: this.jwtOption.Audience,
-                expires: DateTime.UtcNow.AddMinutes(this.jwtOption.ExpirationInMinutes),
-                claims: claims,
-                signingCredentials: new SigningCredentials(
-                 key: authSigningKey,
-                 algorithm: SecurityAlgorithms.HmacSha256Signature)
-                );
-
-            return new JwtSecurityTokenHandler().WriteToken(jwtToken);
-        }
-
         public string GenerateRefreshToken()
         {
             byte[] bytes = new byte[64];

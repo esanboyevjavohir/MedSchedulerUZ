@@ -1,5 +1,6 @@
 ﻿using MedSchedulerUZ.Application.Models.ScheduleModel;
 using MedSchedulerUZ.Application.Services.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MedSchedulerUZ.API.Controllers
@@ -14,6 +15,7 @@ namespace MedSchedulerUZ.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "DeptHead,HospitalAdmin,SuperAdmin")]
         public async Task<IActionResult> Create([FromBody] CreateScheduleModel model)
         {
             var result = await _scheduleService.CreateAsync(model);
@@ -23,6 +25,7 @@ namespace MedSchedulerUZ.API.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "DeptHead,HospitalAdmin,SuperAdmin")]
         public async Task<IActionResult> Update(Guid id, [FromBody] UpdateScheduleModel model)
         {
             var result = await _scheduleService.UpdateAsync(id, model);
@@ -32,6 +35,7 @@ namespace MedSchedulerUZ.API.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "Employee,DeptHead,HospitalAdmin,SuperAdmin")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var result = await _scheduleService.GetByIdAsync(id);
@@ -41,6 +45,7 @@ namespace MedSchedulerUZ.API.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "HospitalAdmin,SuperAdmin")]
         public async Task<IActionResult> GetAll()
         {
             var result = await _scheduleService.GetAllAsync();
@@ -48,6 +53,7 @@ namespace MedSchedulerUZ.API.Controllers
         }
 
         [HttpGet("department/{departmentId}")]
+        [Authorize(Roles = "Employee,DeptHead,HospitalAdmin,SuperAdmin")]
         public async Task<IActionResult> GetByDepartment(Guid departmentId)
         {
             var result = await _scheduleService.GetByDepartmentIdAsync(departmentId);
@@ -55,6 +61,7 @@ namespace MedSchedulerUZ.API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "DeptHead,HospitalAdmin,SuperAdmin")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var result = await _scheduleService.DeleteAsync(id);

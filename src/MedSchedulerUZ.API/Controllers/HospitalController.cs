@@ -15,6 +15,7 @@ namespace MedSchedulerUZ.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "SuperAdmin")]
         public async Task<IActionResult> Create([FromBody] CreateHospitalModel model)
         {
             var result = await _hospitalService.CreateAsync(model);
@@ -24,6 +25,7 @@ namespace MedSchedulerUZ.API.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "HospitalAdmin,SuperAdmin")]
         public async Task<IActionResult> Update(Guid id, [FromBody] UpdateHospitalModel model)
         {
             var result = await _hospitalService.UpdateAsync(id, model);
@@ -33,6 +35,7 @@ namespace MedSchedulerUZ.API.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "Employee,DeptHead,HospitalAdmin,SuperAdmin")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var result = await _hospitalService.GetByIdAsync(id);
@@ -42,7 +45,7 @@ namespace MedSchedulerUZ.API.Controllers
         }
 
         [HttpGet]
-        [AllowAnonymous]
+        [Authorize(Roles = "SuperAdmin")]
         public async Task<IActionResult> GetAll()
         {
             var result = await _hospitalService.GetAllAsync();
@@ -50,6 +53,7 @@ namespace MedSchedulerUZ.API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "SuperAdmin")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var result = await _hospitalService.DeleteAsync(id);

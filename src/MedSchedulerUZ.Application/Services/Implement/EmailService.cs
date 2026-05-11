@@ -14,7 +14,8 @@ namespace MedSchedulerUZ.Application.Services.Implement
         {
             _emailConfig = emailConfig.Value;
         }
-        public async Task<bool> SendEmailAsync(string email, string otp)
+
+        private async Task<bool> SendAsync(string toEmail, string subject, string body)
         {
             try
             {
@@ -23,30 +24,43 @@ namespace MedSchedulerUZ.Application.Services.Implement
                     EnableSsl = _emailConfig.EnableSsl,
                     Credentials = new NetworkCredential(_emailConfig.Username, _emailConfig.Password)
                 };
-
                 var mailMessage = new MailMessage
                 {
                     From = new MailAddress(_emailConfig.DefaultFromEmail, _emailConfig.DefaultFromName),
-                    Subject = "Your EduPress Verification Code",
-                    Body = $"Dear {email}," +
-                           "\nYou are using this email address to register on our website." +
-                           $"\n\nYour verification code is {otp}." +
-                           "\nPlease use it to complete your registration before it expires." +
-                           "\n\nIf you didn't request this, please ignore this email." +
-                           "\n\nThank you!",
-                    IsBodyHtml = true
+                    Subject = subject,
+                    Body = body,
+                    IsBodyHtml = false
                 };
-
-                mailMessage.To.Add(email);
-
+                mailMessage.To.Add(toEmail);
                 await client.SendMailAsync(mailMessage);
-
                 return true;
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
+        }
+
+        public async Task<bool> SendOtpAsync(string email, string otpCode)
+        {
+            var subject = "MedSchedulerUZ - Tasdiqlash kodi";
+            var body = $"Hurmatli foydalanuvchi,\n\n" +
+                       $"Sizning tasdiqlash kodingiz: {otpCode}\n\n" +
+                       $"Kod 5 daqiqa davomida amal qiladi.\n\n" +
+                       $"Agar siz bu so'rovni yubormagan bo'lsangiz, ushbu xatni e'tiborsiz qoldiring.";
+            return await SendAsync(email, subject, body);
+        }
+
+        public async Task<bool> SendPasswordAsync(string email, string fullName, string password)
+        {
+            var subject = "MedSchedulerUZ - Tizimga kirish ma'lumotlari";
+            var body = $"Hurmatli {fullName},\n\n" +
+                       $"Siz MedSchedulerUZ tizimiga qo'shildingiz.\n\n" +
+                       $"Email: {email}\n" +
+                       $"Parol: {password}\n\n" +
+                       $"Iltimos, tizimga kirgandan so'ng parolingizni o'zgartiring.\n\n" +
+                       $"MedSchedulerUZ jamoasi";
+            return await SendAsync(email, subject, body);
         }
     }
 }

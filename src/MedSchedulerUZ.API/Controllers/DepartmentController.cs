@@ -1,5 +1,6 @@
 ﻿using MedSchedulerUZ.Application.Models.DepartmentModel;
 using MedSchedulerUZ.Application.Services.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MedSchedulerUZ.API.Controllers
@@ -14,6 +15,7 @@ namespace MedSchedulerUZ.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "HospitalAdmin,SuperAdmin")]
         public async Task<IActionResult> Create([FromBody] CreateDepartmentModel model)
         {
             var result = await _departmentService.CreateAsync(model);
@@ -23,6 +25,7 @@ namespace MedSchedulerUZ.API.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "HospitalAdmin,SuperAdmin")]
         public async Task<IActionResult> Update(Guid id, [FromBody] UpdateDepartmentModel model)
         {
             var result = await _departmentService.UpdateAsync(id, model);
@@ -32,6 +35,7 @@ namespace MedSchedulerUZ.API.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "Employee,DeptHead,HospitalAdmin,SuperAdmin")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var result = await _departmentService.GetByIdAsync(id);
@@ -41,6 +45,7 @@ namespace MedSchedulerUZ.API.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "SuperAdmin")]
         public async Task<IActionResult> GetAll()
         {
             var result = await _departmentService.GetAllAsync();
@@ -48,6 +53,7 @@ namespace MedSchedulerUZ.API.Controllers
         }
 
         [HttpGet("hospital/{hospitalId}")]
+        [Authorize(Roles = "Employee,DeptHead,HospitalAdmin,SuperAdmin")]
         public async Task<IActionResult> GetByHospital(Guid hospitalId)
         {
             var result = await _departmentService.GetByHospitalIdAsync(hospitalId);
@@ -55,6 +61,7 @@ namespace MedSchedulerUZ.API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "HospitalAdmin,SuperAdmin")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var result = await _departmentService.DeleteAsync(id);
