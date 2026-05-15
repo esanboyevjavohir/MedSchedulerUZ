@@ -21,7 +21,8 @@ namespace MedSchedulerUZ.Application.Helpers.GenerateJWT
             {
                 new Claim(CustomClaimNames.Id, user.Id.ToString()),
                 new Claim(CustomClaimNames.Email, user.Email),
-                new Claim(CustomClaimNames.Role, user.RoleType.ToString())
+                new Claim(CustomClaimNames.Role, user.RoleType.ToString()),
+                new Claim("must_change_password", user.MustChangePassword.ToString())
             };
 
             var authSigningKey = new SymmetricSecurityKey(

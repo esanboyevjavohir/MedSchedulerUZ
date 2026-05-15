@@ -15,6 +15,7 @@ namespace MedSchedulerUZ.Core.Entities
         public string PasswordHash { get; set; }
         public string Salt { get; set; }
         public bool IsActive { get; set; } = true;
+        public bool MustChangePassword { get; set; } = false;
         public string? RefreshToken { get; set; }
         public DateTime? RefreshTokenExpireDate { get; set; }
         public string? ResetPasswordToken { get; set; }

@@ -27,9 +27,13 @@ namespace MedSchedulerUZ.Application.Models
             return new ApiResult<T>(false, default, errors);
         }
 
-        public static object? Failure(Errors errors)
+        public static ApiResult<T> Failure(Errors errors)
         {
-            throw new NotImplementedException();
+            return new ApiResult<T>
+            {
+                Succedded = false,
+                Errors = new List<string> { errors.message }
+            };
         }
     }
 }

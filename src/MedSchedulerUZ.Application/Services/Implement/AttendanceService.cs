@@ -93,7 +93,6 @@ namespace MedSchedulerUZ.Application.Services.Implement
                 attendance.Status = AttendanceStatus.EarlyLeave;
 
             attendance.ClockOut = DateTime.UtcNow;
-            attendance.UpdatedOn = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 

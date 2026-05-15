@@ -11,6 +11,7 @@
         public string Email { get; set; }
         public string AccessToken { get; set; }
         public string RefreshToken { get; set; }
+        public bool MustChangePassword { get; set; }
         public DateTime ExpireAt { get; set; }
         public DateTime RefreshTokenExpireAt { get; set; }
     }

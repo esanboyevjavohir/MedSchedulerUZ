@@ -3,6 +3,7 @@ using System;
 using MedSchedulerUZ.DataAccess.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MedSchedulerUZ.DataAccess.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20260512191641_added_seed_data")]
+    partial class added_seed_data
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -453,9 +456,6 @@ namespace MedSchedulerUZ.DataAccess.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("MustChangePassword")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text");
@@ -507,7 +507,6 @@ namespace MedSchedulerUZ.DataAccess.Migrations
                             Email = "javohiresanboyev053@gmail.com",
                             FullName = "Esanboyev Javohir",
                             IsActive = true,
-                            MustChangePassword = false,
                             PasswordHash = "q7Mgq0zaGD0sAPTnwO8j9d69t78KJb5vBJ3VRNq5lfQ=",
                             PhoneNumber = "+998933116612",
                             RoleType = 1,

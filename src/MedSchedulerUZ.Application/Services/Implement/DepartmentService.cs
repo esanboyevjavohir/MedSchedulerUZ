@@ -48,7 +48,6 @@ namespace MedSchedulerUZ.Application.Services.Implement
             department.Name = model.Name;
             department.MinStaffRequired = model.MinStaffRequired;
             department.IsActive = model.IsActive;
-            department.UpdatedOn = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
             var response = new UpdateDepartmentResponseModel { Id = department.Id };
@@ -107,7 +106,6 @@ namespace MedSchedulerUZ.Application.Services.Implement
                 return ApiResult<bool>.Failure(["Bo'lim topilmadi"]);
 
             department.IsActive = false;
-            department.UpdatedOn = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
             return ApiResult<bool>.Success(true);

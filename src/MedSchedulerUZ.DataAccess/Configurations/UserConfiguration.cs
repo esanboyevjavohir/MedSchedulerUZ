@@ -17,24 +17,31 @@ namespace MedSchedulerUZ.DataAccess.Configurations
         const string seedSalt = "f67273d6-d1ee-4129-9740-75a8df1a5c5b";
         const string seedPassword = "Javohir@2606";
 
-        private List<User> GetSeedUsers() => new()
+        const string testSalt = "medscheduler-seed-2026";
+        const string testPassword = "Med@12345";
+
+        private List<User> GetSeedUsers()
         {
-            new User
+            return new()
             {
-                Id = new Guid("j0ae7f44-f3a2-4ea6-8030-01a4ea1b1aet"),
-                FullName = "Esanboyev Javohir",
-                Email = "javohiresanboyev053@gmail.com",
-                PhoneNumber = "+998933116612",
-                RoleType = UserRole.SuperAdmin,
-                HospitalId = null,
-                DepartmentId = null,
-                SpecializationId = null,
-                IsActive = true,
-                Salt = seedSalt,
-                PasswordHash = Encrypt(seedPassword, seedSalt),
-                CreatedOn = new DateTime(2026, 4, 11, 0, 0, 0, DateTimeKind.Utc)
-            }
-        };
+                new User
+                {
+                    Id = new Guid("a0ae7f44-f3a2-4ea6-8030-01a4ea1b1ae3"),
+                    FullName = "Esanboyev Javohir",
+                    Email = "javohiresanboyev053@gmail.com",
+                    PhoneNumber = "+998933116612",
+                    RoleType = UserRole.SuperAdmin,
+                    HospitalId = null,
+                    DepartmentId = null,
+                    SpecializationId = null,
+                    IsActive = true,
+                    MustChangePassword = false,
+                    Salt = seedSalt,
+                    PasswordHash = Encrypt(seedPassword, seedSalt),
+                    CreatedOn = new DateTime(2026, 4, 11, 0, 0, 0, DateTimeKind.Utc)
+                }
+            };
+        }
 
         private static string Encrypt(string password, string salt)
         {

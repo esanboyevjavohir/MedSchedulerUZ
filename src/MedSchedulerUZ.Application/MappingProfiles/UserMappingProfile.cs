@@ -17,12 +17,10 @@ namespace MedSchedulerUZ.Application.MappingProfiles
 
             // CreateUserModel -> User
             CreateMap<CreateUserModel, User>()
-                .ForMember(dest => dest.PasswordHash,
-                        opt => opt.Ignore())
-                .ForMember(dest => dest.Salt, 
-                        opt => opt.Ignore())
-                .ForMember(dest => dest.IsActive,
-                        opt => opt.MapFrom(src => true));
+                .ForMember(dest => dest.PasswordHash, opt => opt.Ignore())
+                .ForMember(dest => dest.Salt, opt => opt.Ignore())
+                .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => true))
+                .ForMember(dest => dest.MustChangePassword, opt => opt.Ignore()); 
         }
     }
 }

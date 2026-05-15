@@ -82,7 +82,6 @@ namespace MedSchedulerUZ.Application.Services.Implement
             shift.ShiftType = model.ShiftType;
             shift.Status = model.Status;
             shift.IsOnCall = model.IsOnCall;
-            shift.UpdatedOn = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 
@@ -162,7 +161,6 @@ namespace MedSchedulerUZ.Application.Services.Implement
                 return ApiResult<bool>.Failure(["Smena topilmadi"]);
 
             shift.Status = ShiftStatus.Cancelled;
-            shift.UpdatedOn = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
             return ApiResult<bool>.Success(true);

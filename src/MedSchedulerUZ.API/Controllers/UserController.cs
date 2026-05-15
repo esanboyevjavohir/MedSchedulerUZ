@@ -5,6 +5,7 @@ using MedSchedulerUZ.Application.Services.Interface;
 using MedSchedulerUZ.Core.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace MedSchedulerUZ.API.Controllers
 {
@@ -31,6 +32,16 @@ namespace MedSchedulerUZ.API.Controllers
         [Authorize(Roles = "DeptHead,HospitalAdmin,SuperAdmin")]
         public async Task<IActionResult> Register([FromBody] CreateUserModel model)
         {
+            var currentUserRole = User.FindFirst(CustomClaimNames.Role)!.Value;
+
+            if (currentUserRole == UserRole.DeptHead.ToString() &&
+                model.RoleType != UserRole.Employee)
+                return Forbid();
+
+            if (currentUserRole == UserRole.HospitalAdmin.ToString() &&
+                model.RoleType == UserRole.SuperAdmin)
+                return Forbid();
+
             var result = await _userService.RegisterAsync(model);
             if (!result.Succedded)
                 return BadRequest(result);
@@ -39,6 +50,7 @@ namespace MedSchedulerUZ.API.Controllers
 
         [HttpPost("send-otp/{userId}")]
         [AllowAnonymous]
+        [SwaggerOperation(Summary = "Emailga otp code yuborish")]
         public async Task<IActionResult> SendOtpCode(Guid userId)
         {
             var result = await _userService.SendOtpCode(userId);
@@ -49,6 +61,7 @@ namespace MedSchedulerUZ.API.Controllers
 
         [HttpPost("verify-otp")]
         [AllowAnonymous]
+        [SwaggerOperation(Summary = "Otp codeni tasdiqlash")]
         public async Task<IActionResult> VerifyOtpCode(string otpCode, Guid userId)
         {
             var result = await _userService.VerifyOtpCode(otpCode, userId);
@@ -57,7 +70,7 @@ namespace MedSchedulerUZ.API.Controllers
             return Ok(result);
         }
 
-        [HttpPut("profile")]
+        [HttpPut("profile-update")]
         [Authorize]
         public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileModel model)
         {
@@ -76,7 +89,7 @@ namespace MedSchedulerUZ.API.Controllers
             var result = await _userService.ChangePasswordAsync(currentUserId, model);
             if (!result.Succedded)
                 return BadRequest(result);
-            return Ok(result);
+            return Ok(new {message = "Parolingiz muvaffaqiyatli o'zgartirildi. Iltimos, qayta login qiling!" });
         }
 
         [HttpGet("my-profile")]
@@ -90,6 +103,7 @@ namespace MedSchedulerUZ.API.Controllers
 
         [HttpPost("resend-otp/{userId}")]
         [AllowAnonymous]
+        [SwaggerOperation(Summary = "Otp codeni qayta yuborish")]
         public async Task<IActionResult> ResendOtpCode(Guid userId)
         {
             var result = await _userService.ResendOtpCode(userId);
@@ -100,6 +114,7 @@ namespace MedSchedulerUZ.API.Controllers
 
         [HttpPost("forgot-password")]
         [AllowAnonymous]
+        [SwaggerOperation(Summary = "Parol yoddan chiqqan xolatda emailga vaqtinchalik code yuborish")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordModel model)
         {
             var result = await _userService.ForgotPasswordAsync(model.Email);
@@ -110,6 +125,7 @@ namespace MedSchedulerUZ.API.Controllers
 
         [HttpPost("reset-password")]
         [AllowAnonymous]
+        [SwaggerOperation(Summary = "Yangi parol qo'yish")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordModel model)
         {
             var result = await _userService.ResetPasswordAsync(model);
@@ -120,9 +136,10 @@ namespace MedSchedulerUZ.API.Controllers
 
         [HttpPost("refresh-token")]
         [AllowAnonymous]
-        public async Task<IActionResult> RefreshToken(Guid id, string refreshToken)
+        [SwaggerOperation(Summary = "Access token muddati tugaganda yangilash uchun")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenModel model)
         {
-            var result = await _userService.ValidateAndRefreshToken(id, refreshToken);
+            var result = await _userService.ValidateAndRefreshToken(model.Id, model.RefreshToken);
             if (!result.Succedded)
                 return BadRequest(result);
             return Ok(result);
@@ -144,7 +161,7 @@ namespace MedSchedulerUZ.API.Controllers
             return Ok(result);
         }
 
-        [HttpGet]
+        [HttpGet("GetAllUser")]
         [Authorize(Roles = "DeptHead,HospitalAdmin,SuperAdmin")]
         public async Task<IActionResult> GetAll()
         {

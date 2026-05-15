@@ -47,7 +47,6 @@ namespace MedSchedulerUZ.Application.Services.Implement
             hospital.Phone = model.Phone;
             hospital.Type = model.Type;
             hospital.IsActive = model.IsActive;
-            hospital.UpdatedOn = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 
@@ -81,7 +80,6 @@ namespace MedSchedulerUZ.Application.Services.Implement
                 return ApiResult<bool>.Failure(["Kasalxona topilmadi"]);
 
             hospital.IsActive = false;
-            hospital.UpdatedOn = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
             return ApiResult<bool>.Success(true);

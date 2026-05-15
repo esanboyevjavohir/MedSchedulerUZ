@@ -1,4 +1,5 @@
 using MedSchedulerUZ.API;
+using MedSchedulerUZ.API.Middlewares;
 using MedSchedulerUZ.Application;
 using MedSchedulerUZ.Application.Helpers;
 using MedSchedulerUZ.DataAccess;
@@ -29,7 +30,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseMiddleware<ExceptionHandlerMiddlewear>();
+
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
+
+app.UseMiddleware<MustChangePasswordMiddleware>();
 
 app.UseAuthorization();
 

@@ -12,6 +12,7 @@ using FluentValidation;
 using Microsoft.Extensions.Logging;
 using MedSchedulerUZ.Core.Enums;
 using MedSchedulerUZ.Application.Helpers;
+using MedSchedulerUZ.Application.Validators;
 
 namespace MedSchedulerUZ.Application.Services.Implement
 {
@@ -27,6 +28,7 @@ namespace MedSchedulerUZ.Application.Services.Implement
         private readonly UserSettings _userSettings;
         private readonly IValidator<CreateUserModel> _createUserValidator;
         private readonly IValidator<ResetPasswordModel> _resetPasswordValidator;
+        private readonly IValidator<ChangePasswordModel> _changePasswordValidator;
 
         public UserService(
             IMapper mapper,
@@ -38,7 +40,8 @@ namespace MedSchedulerUZ.Application.Services.Implement
             IOptions<UserSettings> userSettings,
             IOptions<JwtOption> jwtOption,            
             IValidator<CreateUserModel> createUserValidator,
-            IValidator<ResetPasswordModel> resetPasswordValidator)
+            IValidator<ResetPasswordModel> resetPasswordValidator,
+            IValidator<ChangePasswordModel> changePasswordValidator)
         {
             _mapper = mapper;
             _logger = logger;
@@ -50,6 +53,7 @@ namespace MedSchedulerUZ.Application.Services.Implement
             _jwtOption = jwtOption.Value;             
             _createUserValidator = createUserValidator;
             _resetPasswordValidator = resetPasswordValidator;
+            _changePasswordValidator = changePasswordValidator;
         }
 
         public async Task<ApiResult<UserResponseModel>> GetMeAsync(Guid currentUserId)
@@ -90,15 +94,27 @@ namespace MedSchedulerUZ.Application.Services.Implement
             if (user is null)
                 return ApiResult<LoginResponseModel>.Failure(["Email yoki parol noto'g'ri"]);
 
-            if (user.RoleType != UserRole.SuperAdmin)
-            {
-                var isEmailVerified = user.OtpCodes
-                    .Any(o => o.Status == OtpCodeStatus.Verified);
-                if (!isEmailVerified)
-                    return ApiResult<LoginResponseModel>.Failure(["Email tasdiqlanmagan"]);
-            }
             if (!_passwordHasher.Verify(user.PasswordHash, loginModel.Password, user.Salt))
                 return ApiResult<LoginResponseModel>.Failure(["Email yoki parol noto'g'ri"]);
+
+            //if (user.MustChangePassword)
+            //{
+            //    return ApiResult<LoginResponseModel>.Success(new LoginResponseModel
+            //    {
+            //        Id = user.Id,
+            //        Email = user.Email,
+            //        MustChangePassword = true
+            //        // AccessToken va RefreshToken berilmaydi
+            //    });
+            //}
+
+            //if (user.RoleType != UserRole.SuperAdmin && !user.MustChangePassword)
+            //{
+            //    var isEmailVerified = user.OtpCodes
+            //        .Any(o => o.Status == OtpCodeStatus.Verified);
+            //    if (!isEmailVerified)
+            //        return ApiResult<LoginResponseModel>.Failure(["Email tasdiqlanmagan"]);
+            //}
 
             var accessToken = _jwtTokenHandler.GenerateAccessToken(user);
             var refreshToken = _jwtTokenHandler.GenerateRefreshToken();
@@ -112,7 +128,9 @@ namespace MedSchedulerUZ.Application.Services.Implement
                 Email = user.Email,
                 AccessToken = accessToken,
                 RefreshToken = refreshToken,
-                ExpireAt = DateTime.UtcNow.AddMinutes(_jwtOption.ExpirationInMinutes)
+                MustChangePassword = user.MustChangePassword,
+                ExpireAt = DateTime.UtcNow.AddMinutes(_jwtOption.ExpirationInMinutes),
+                RefreshTokenExpireAt = DateTime.UtcNow.AddDays(_userSettings.RefreshTokenExpirationDays)
             });
         }
 
@@ -161,6 +179,7 @@ namespace MedSchedulerUZ.Application.Services.Implement
             var user = _mapper.Map<User>(model);
             user.Salt = GenerateSalt();
             user.PasswordHash = _passwordHasher.Encrypt(generatedPassword, user.Salt);
+            user.MustChangePassword = true;
 
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
@@ -197,6 +216,10 @@ namespace MedSchedulerUZ.Application.Services.Implement
 
         public async Task<ApiResult<bool>> ChangePasswordAsync(Guid userId, ChangePasswordModel model)
         {
+            var validationResult = await _changePasswordValidator.ValidateAsync(model);
+            if (!validationResult.IsValid)
+                return ApiResult<bool>.Failure(validationResult.Errors.Select(e => e.ErrorMessage));
+
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.Id == userId && u.IsActive);
 
@@ -212,6 +235,9 @@ namespace MedSchedulerUZ.Application.Services.Implement
                 return ApiResult<bool>.Failure(["Yangi parol eski parol bilan bir xil bo'lmasligi kerak"]);
 
             user.PasswordHash = _passwordHasher.Encrypt(model.NewPassword, user.Salt);
+            user.MustChangePassword = false;
+            user.RefreshToken = null;
+            user.RefreshTokenExpireDate = null;
             user.UpdatedOn = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();

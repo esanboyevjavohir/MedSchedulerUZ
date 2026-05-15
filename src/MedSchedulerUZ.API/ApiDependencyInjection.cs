@@ -8,6 +8,8 @@ namespace MedSchedulerUZ.API
         {
             services.AddSwaggerGen(s =>
             {
+                s.EnableAnnotations();
+
                 s.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Description = "JWT Authorization header using the Bearer scheme (Example: 'Bearer YOUR_TOKEN')",

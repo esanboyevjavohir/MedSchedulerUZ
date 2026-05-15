@@ -54,7 +54,6 @@ namespace MedSchedulerUZ.Application.Services.Implement
             schedule.WeekStart = model.WeekStart;
             schedule.WeekEnd = model.WeekEnd;
             schedule.Status = model.Status;
-            schedule.UpdatedOn = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 
@@ -117,7 +116,6 @@ namespace MedSchedulerUZ.Application.Services.Implement
                 return ApiResult<bool>.Failure(["Jadval topilmadi"]);
 
             schedule.Status = ScheduleStatus.Archived;
-            schedule.UpdatedOn = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
             return ApiResult<bool>.Success(true);

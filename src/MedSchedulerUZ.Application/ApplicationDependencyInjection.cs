@@ -3,6 +3,7 @@ using MedSchedulerUZ.Application.Email;
 using MedSchedulerUZ.Application.Helpers.GenerateJWT;
 using MedSchedulerUZ.Application.MappingProfiles;
 using MedSchedulerUZ.Application.Models.User;
+using MedSchedulerUZ.Application.Services.Background;
 using MedSchedulerUZ.Application.Services.Implement;
 using MedSchedulerUZ.Application.Services.Interface;
 using MedSchedulerUZ.Application.Validators;
@@ -27,6 +28,8 @@ namespace MedSchedulerUZ.Application
 
             services.RegisterCashing();
 
+            services.AddHostedService<CertificationExpiryBackgroundService>();
+
             return services;
         }
 
@@ -38,9 +41,17 @@ namespace MedSchedulerUZ.Application
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IDepartmentService, DepartmentService>();
             services.AddScoped<IScheduleService, ScheduleService>();
+            services.AddScoped<ILeaveRequestService, LeaveRequestService>();
             services.AddScoped<IHospitalService, HospitalService>();
+            services.AddScoped<IAttendanceService, AttendanceService>();
+            services.AddScoped<ICertificationService, CertificationService>();
+            services.AddScoped<INotificationService, NotificationService>();
+            services.AddScoped<IShiftSwapService, ShiftSwapService>();
+            services.AddScoped<IShiftService, ShiftService>();
+            services.AddScoped<ISpecializationService, SpecializationService>();
             services.AddScoped<IValidator<CreateUserModel>, CreateUserValidator>();
             services.AddScoped<IValidator<ResetPasswordModel>, ResetPasswordValidator>();
+            services.AddScoped<IValidator<ChangePasswordModel>, ChangePasswordValidator>();
         }
 
         private static void RegisterAutoMapper(this IServiceCollection services)
@@ -61,6 +72,7 @@ namespace MedSchedulerUZ.Application
         public static void AddJwtConfiguration(this IServiceCollection services, IConfiguration configuration)
         {
             services.Configure<JwtOption>(configuration.GetSection("JwtSettings"));
+            services.Configure<UserSettings>(configuration.GetSection("UserSettings"));
         }
     }
 }
