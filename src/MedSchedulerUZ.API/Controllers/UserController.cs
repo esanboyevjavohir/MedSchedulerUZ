@@ -6,6 +6,7 @@ using MedSchedulerUZ.Core.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
+using System.Security.Claims;
 
 namespace MedSchedulerUZ.API.Controllers
 {
@@ -32,19 +33,19 @@ namespace MedSchedulerUZ.API.Controllers
         [Authorize(Roles = "DeptHead,HospitalAdmin,SuperAdmin")]
         public async Task<IActionResult> Register([FromBody] CreateUserModel model)
         {
-            var currentUserRole = User.FindFirst(CustomClaimNames.Role)!.Value;
+            var currentRole = User.FindFirst(CustomClaimNames.Role)!.Value;
+            var currentUserId = Guid.Parse(User.FindFirst(CustomClaimNames.Id)!.Value);
 
-            if (currentUserRole == UserRole.DeptHead.ToString() &&
-                model.RoleType != UserRole.Employee)
+            // DeptHead faqat Employee qo'sha oladi
+            if (currentRole == UserRole.DeptHead.ToString() && model.RoleType != UserRole.Employee)
                 return Forbid();
 
-            if (currentUserRole == UserRole.HospitalAdmin.ToString() &&
-                model.RoleType == UserRole.SuperAdmin)
+            // HospitalAdmin SuperAdmin qo'sha olmaydi
+            if (currentRole == UserRole.HospitalAdmin.ToString() && model.RoleType == UserRole.SuperAdmin)
                 return Forbid();
 
-            var result = await _userService.RegisterAsync(model);
-            if (!result.Succedded)
-                return BadRequest(result);
+            var result = await _userService.RegisterAsync(model, currentRole, currentUserId);
+            if (!result.Succedded) return BadRequest(result);
             return Ok(result);
         }
 
@@ -165,7 +166,11 @@ namespace MedSchedulerUZ.API.Controllers
         [Authorize(Roles = "DeptHead,HospitalAdmin,SuperAdmin")]
         public async Task<IActionResult> GetAll()
         {
-            var result = await _userService.GetAllAsync();
+            var role = User.FindFirst(CustomClaimNames.Role)!.Value;
+            var userId = Guid.Parse(User.FindFirst(CustomClaimNames.Id)!.Value);
+
+            var result = await _userService.GetAllAsync(role, userId);
+            if (!result.Succedded) return BadRequest(result);
             return Ok(result);
         }
 
@@ -173,6 +178,22 @@ namespace MedSchedulerUZ.API.Controllers
         [Authorize(Roles = "DeptHead,HospitalAdmin,SuperAdmin")]
         public async Task<IActionResult> Delete(Guid id)
         {
+            var currentUserRole = User.FindFirst(CustomClaimNames.Role)!.Value;
+            var targetUser = await _userService.GetByIdAsync(id);
+
+            if (!targetUser.Succedded)
+                return NotFound(targetUser);
+
+            // HospitalAdmin faqat DeptHead va Employee ni o'chira oladi
+            if (currentUserRole == UserRole.HospitalAdmin.ToString() &&
+                targetUser.Result.RoleType == "SuperAdmin")
+                return Forbid();
+
+            // DeptHead faqat Employee ni o'chira oladi
+            if (currentUserRole == UserRole.DeptHead.ToString() &&
+                targetUser.Result.RoleType != "Employee")
+                return Forbid();
+
             var result = await _userService.DeleteUserAsync(id);
             if (!result.Succedded)
                 return NotFound(result);

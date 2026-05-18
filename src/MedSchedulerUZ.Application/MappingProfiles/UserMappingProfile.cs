@@ -10,17 +10,21 @@ namespace MedSchedulerUZ.Application.MappingProfiles
         {
             // User -> UserResponseModel
             CreateMap<User, UserResponseModel>()
-                .ForMember(dest => dest.RoleType,
-                        opt => opt.MapFrom(src => src.RoleType.ToString()))
-                .ForMember(dest => dest.SpecializationName,
-                        opt => opt.MapFrom(src => src.Specialization.Name));
+                .ForMember(d => d.SpecializationName, o => o.MapFrom(s => s.Specialization != null ?
+                        s.Specialization.Name : null))
+                .ForMember(d => d.HospitalName, o => o.MapFrom(s => s.Hospital != null ? 
+                        s.Hospital.Name : null))
+                .ForMember(d => d.DepartmentName, o => o.MapFrom(s => s.Department != null ? 
+                        s.Department.Name : null));
 
             // CreateUserModel -> User
             CreateMap<CreateUserModel, User>()
                 .ForMember(dest => dest.PasswordHash, opt => opt.Ignore())
                 .ForMember(dest => dest.Salt, opt => opt.Ignore())
                 .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => true))
-                .ForMember(dest => dest.MustChangePassword, opt => opt.Ignore()); 
+                .ForMember(dest => dest.MustChangePassword, opt => opt.Ignore());
+
+            CreateMap<User, CreateUserResponseModel>();
         }
     }
 }

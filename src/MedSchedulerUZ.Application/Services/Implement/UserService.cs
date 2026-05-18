@@ -142,20 +142,33 @@ namespace MedSchedulerUZ.Application.Services.Implement
                 .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
-        public async Task<ApiResult<CreateUserResponseModel>> RegisterAsync(CreateUserModel model)
+        public async Task<ApiResult<CreateUserResponseModel>> RegisterAsync(CreateUserModel model, string currentRole, Guid currentUserId)
         {
-            var exists = await _context.Users
-                .AnyAsync(u => u.Email == model.Email);
+            var exists = await _context.Users.AnyAsync(u => u.Email == model.Email);
             if (exists)
                 return ApiResult<CreateUserResponseModel>.Failure(["Bu email allaqachon ro'yxatdan o'tgan"]);
+
+            // HospitalAdmin faqat o'z shifoxonasiga qo'sha oladi
+            if (currentRole == UserRole.HospitalAdmin.ToString())
+            {
+                var currentUser = await _context.Users.FindAsync(currentUserId);
+                if (model.HospitalId != currentUser!.HospitalId)
+                    return ApiResult<CreateUserResponseModel>.Failure(["Faqat o'z shifoxonangizga xodim qo'sha olasiz"]);
+            }
+
+            // DeptHead faqat o'z bo'limiga qo'sha oladi
+            if (currentRole == UserRole.DeptHead.ToString())
+            {
+                var currentUser = await _context.Users.FindAsync(currentUserId);
+                if (model.DepartmentId != currentUser!.DepartmentId)
+                    return ApiResult<CreateUserResponseModel>.Failure(["Faqat o'z bo'limingizga xodim qo'sha olasiz"]);
+            }
 
             // Role ga qarab tekshiruv
             if (model.RoleType == UserRole.DeptHead && !model.DepartmentId.HasValue)
                 return ApiResult<CreateUserResponseModel>.Failure(["Bo'lim boshlig'i uchun DepartmentId majburiy"]);
-
             if (model.RoleType == UserRole.Employee && !model.DepartmentId.HasValue)
                 return ApiResult<CreateUserResponseModel>.Failure(["Xodim uchun DepartmentId majburiy"]);
-
             if (model.RoleType == UserRole.Employee && !model.SpecializationId.HasValue)
                 return ApiResult<CreateUserResponseModel>.Failure(["Xodim uchun SpecializationId majburiy"]);
 
@@ -165,7 +178,6 @@ namespace MedSchedulerUZ.Application.Services.Implement
                 if (department is null)
                     return ApiResult<CreateUserResponseModel>.Failure(["Bo'lim topilmadi"]);
             }
-
             if (model.SpecializationId.HasValue)
             {
                 var specialization = await _context.Specializations.FirstOrDefaultAsync(s => s.Id == model.SpecializationId);
@@ -173,20 +185,15 @@ namespace MedSchedulerUZ.Application.Services.Implement
                     return ApiResult<CreateUserResponseModel>.Failure(["Mutaxassislik topilmadi"]);
             }
 
-            // Avtomatik parol generatsiya
             var generatedPassword = GeneratePassword();
-
             var user = _mapper.Map<User>(model);
             user.Salt = GenerateSalt();
             user.PasswordHash = _passwordHasher.Encrypt(generatedPassword, user.Salt);
             user.MustChangePassword = true;
-
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
 
-            // Parolni emailga yuborish
             await _emailService.SendPasswordAsync(model.Email, model.FullName, generatedPassword);
-
             var response = _mapper.Map<CreateUserResponseModel>(user);
             return ApiResult<CreateUserResponseModel>.Success(response);
         }
@@ -203,13 +210,38 @@ namespace MedSchedulerUZ.Application.Services.Implement
             return ApiResult<UserResponseModel>.Success(response);
         }
 
-        public async Task<ApiResult<List<UserResponseModel>>> GetAllAsync()
+        public async Task<ApiResult<List<UserResponseModel>>> GetAllAsync(string role, Guid currentUserId)
         {
-            var users = await _context.Users
-                .Include(u => u.Specialization)  // Role Include olib tashlandi
-                .Where(u => u.IsActive)
-                .ToListAsync();
+            IQueryable<User> query = _context.Users
+                .Include(u => u.Specialization)
+                .Include(u => u.Hospital)
+                .Include(u => u.Department)
+                .Where(u => u.IsActive);
 
+            if (role == UserRole.SuperAdmin.ToString())
+            {
+                // Hammani ko'radi — filter yo'q
+            }
+            else if (role == UserRole.HospitalAdmin.ToString())
+            {
+                var currentUser = await _context.Users.FindAsync(currentUserId);
+                query = query.Where(u =>
+                    u.HospitalId == currentUser!.HospitalId &&
+                    (u.RoleType == UserRole.DeptHead || u.RoleType == UserRole.Employee));
+            }
+            else if (role == UserRole.DeptHead.ToString())
+            {
+                var currentUser = await _context.Users.FindAsync(currentUserId);
+                query = query.Where(u =>
+                    u.DepartmentId == currentUser!.DepartmentId &&
+                    u.RoleType == UserRole.Employee);
+            }
+            else
+            {
+                return ApiResult<List<UserResponseModel>>.Failure(["Ruxsat yo'q"]);
+            }
+
+            var users = await query.ToListAsync();
             var response = _mapper.Map<List<UserResponseModel>>(users);
             return ApiResult<List<UserResponseModel>>.Success(response);
         }
@@ -247,13 +279,15 @@ namespace MedSchedulerUZ.Application.Services.Implement
         public async Task<ApiResult<bool>> DeleteUserAsync(Guid id)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
-
             if (user is null)
                 return ApiResult<bool>.Failure(["Foydalanuvchi topilmadi"]);
 
-            user.IsActive = false; // Soft delete
-            await _context.SaveChangesAsync();
+            // SuperAdmin ni o'chirib bo'lmaydi
+            if (user.RoleType == UserRole.SuperAdmin)
+                return ApiResult<bool>.Failure(["Super adminni o'chirib bo'lmaydi"]);
 
+            user.IsActive = false;
+            await _context.SaveChangesAsync();
             return ApiResult<bool>.Success(true);
         }
 
@@ -355,7 +389,7 @@ namespace MedSchedulerUZ.Application.Services.Implement
             user.ResetPasswordTokenExpiry = DateTime.UtcNow.AddMinutes(10);
             await _context.SaveChangesAsync();
 
-            bool isSent = await _emailService.SendPasswordAsync(user.Email, user.FullName, tempPassword);
+            bool isSent = await _emailService.SendResetPasswordAsync(user.Email, user.FullName, tempPassword);
             if (!isSent)
                 return ApiResult<bool>.Failure(["Email yuborishda xatolik yuz berdi"]);
 

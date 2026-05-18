@@ -8,5 +8,10 @@
         public bool IsActive { get; set; }
         public string RoleType { get; set; } = null!;
         public string? SpecializationName { get; set; }
+        public Guid? HospitalId { get; set; }    
+        public string? HospitalName { get; set; } // (optional, foydali)
+        public Guid? DepartmentId { get; set; }   
+        public string? DepartmentName { get; set; } // (optional, foydali)
+        public DateTime CreatedOn { get; set; }
     }
 }

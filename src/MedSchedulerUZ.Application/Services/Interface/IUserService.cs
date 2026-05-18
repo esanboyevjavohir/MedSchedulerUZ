@@ -7,7 +7,8 @@ namespace MedSchedulerUZ.Application.Services.Interface
     public interface IUserService
     {
         Task<ApiResult<LoginResponseModel>> LoginAsync(LoginUserModel model);
-        Task<ApiResult<CreateUserResponseModel>> RegisterAsync(CreateUserModel model);
+        Task<ApiResult<CreateUserResponseModel>> RegisterAsync(CreateUserModel model, 
+            string currentRole, Guid currentUserId);
         Task<ApiResult<UserResponseModel>> GetByIdAsync(Guid id);
         Task<ApiResult<UserResponseModel>> GetMeAsync(Guid currentUserId);
         Task<ApiResult<bool>> SendOtpCode(Guid userId);
@@ -18,7 +19,7 @@ namespace MedSchedulerUZ.Application.Services.Interface
         Task<ApiResult<bool>> ResetPasswordAsync(ResetPasswordModel model);
         Task<ApiResult<bool>> ChangePasswordAsync(Guid userId, ChangePasswordModel model);
         Task<ApiResult<bool>> UpdateProfileAsync(Guid currentUserId, UpdateProfileModel model);
-        Task<ApiResult<List<UserResponseModel>>> GetAllAsync();
+        Task<ApiResult<List<UserResponseModel>>> GetAllAsync(string role, Guid currentUserId);
         Task<ApiResult<bool>> DeleteUserAsync(Guid id);
     }
 }
