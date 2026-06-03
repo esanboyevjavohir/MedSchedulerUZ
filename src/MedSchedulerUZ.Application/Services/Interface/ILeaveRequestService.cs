@@ -9,6 +9,7 @@ namespace MedSchedulerUZ.Application.Services.Interface
         Task<ApiResult<UpdateLeaveRequestResponseModel>> RespondAsync(Guid id, Guid approverId, UpdateLeaveRequestModel model);
         Task<ApiResult<LeaveRequestResponseModel>> GetByIdAsync(Guid id);
         Task<ApiResult<List<LeaveRequestResponseModel>>> GetByUserIdAsync(Guid userId);
+        Task<ApiResult<List<LeaveRequestResponseModel>>> GetAllAsync();
         Task<ApiResult<List<LeaveRequestResponseModel>>> GetPendingAsync();
     }
 }

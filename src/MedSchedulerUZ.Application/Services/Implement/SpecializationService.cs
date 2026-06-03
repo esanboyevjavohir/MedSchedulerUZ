@@ -59,6 +59,7 @@ namespace MedSchedulerUZ.Application.Services.Implement
         {
             var specialization = await _context.Specializations
                 .Include(s => s.Department)
+                .ThenInclude(d => d.Hospital)
                 .FirstOrDefaultAsync(s => s.Id == id);
 
             if (specialization is null)
@@ -72,11 +73,23 @@ namespace MedSchedulerUZ.Application.Services.Implement
         {
             var specializations = await _context.Specializations
                 .Include(s => s.Department)
+                .ThenInclude(d => d.Hospital)
                 .Where(s => s.IsActive)
                 .ToListAsync();
 
             return ApiResult<List<SpecializationResponseModel>>.Success(
                 _mapper.Map<List<SpecializationResponseModel>>(specializations));
+        }
+
+        public async Task<ApiResult<List<SpecializationResponseModel>>> GetByDepartmentAsync(Guid departmentId)
+        {
+            var specs = await _context.Specializations
+                .Include(d => d.Department)
+                .ThenInclude(h => h.Hospital)
+                .Where(s => s.DepartmentId == departmentId && s.IsActive)
+                .ToListAsync();
+            return ApiResult<List<SpecializationResponseModel>>.Success(
+                _mapper.Map<List<SpecializationResponseModel>>(specs));
         }
     }
 }

@@ -13,7 +13,9 @@ namespace MedSchedulerUZ.Application.MappingProfiles
     {
         public SpecializationMapping()
         {
-            CreateMap<Specialization, SpecializationResponseModel>();
+            CreateMap<Specialization, SpecializationResponseModel>()
+                .ForMember(d => d.DepartmentName, o => o.MapFrom(s => s.Department.Name))
+                .ForMember(d => d.HospitalName, o => o.MapFrom(s => s.Department.Hospital.Name));
             CreateMap<CreateSpecializationModel, Specialization>();
         }
     }

@@ -20,8 +20,8 @@ namespace MedSchedulerUZ.API.Controllers
         {
             var result = await _scheduleService.CreateAsync(model);
             if (!result.Succedded)
-                return BadRequest(result.Errors);
-            return Ok(result.Result);
+                return BadRequest(result);
+            return Ok(result);
         }
 
         [HttpPut("{id}")]
@@ -30,8 +30,8 @@ namespace MedSchedulerUZ.API.Controllers
         {
             var result = await _scheduleService.UpdateAsync(id, model);
             if (!result.Succedded)
-                return BadRequest(result.Errors);
-            return Ok(result.Result);
+                return BadRequest(result);
+            return Ok(result);
         }
 
         [HttpGet("{id}")]
@@ -41,15 +41,15 @@ namespace MedSchedulerUZ.API.Controllers
             var result = await _scheduleService.GetByIdAsync(id);
             if (!result.Succedded)
                 return NotFound(result.Errors);
-            return Ok(result.Result);
+            return Ok(result);
         }
 
         [HttpGet]
-        [Authorize(Roles = "HospitalAdmin,SuperAdmin")]
+        [Authorize(Roles = "Employee,DeptHead,HospitalAdmin,SuperAdmin")]
         public async Task<IActionResult> GetAll()
         {
             var result = await _scheduleService.GetAllAsync();
-            return Ok(result.Result);
+            return Ok(result);
         }
 
         [HttpGet("department/{departmentId}")]
@@ -57,7 +57,7 @@ namespace MedSchedulerUZ.API.Controllers
         public async Task<IActionResult> GetByDepartment(Guid departmentId)
         {
             var result = await _scheduleService.GetByDepartmentIdAsync(departmentId);
-            return Ok(result.Result);
+            return Ok(result);
         }
 
         [HttpDelete("{id}")]
@@ -67,7 +67,7 @@ namespace MedSchedulerUZ.API.Controllers
             var result = await _scheduleService.DeleteAsync(id);
             if (!result.Succedded)
                 return NotFound(result.Errors);
-            return Ok(result.Result);
+            return Ok(result);
         }
     }
 }

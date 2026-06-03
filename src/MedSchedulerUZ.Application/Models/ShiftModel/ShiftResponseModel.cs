@@ -15,6 +15,7 @@ namespace MedSchedulerUZ.Application.Models.ShiftModel
         public ShiftType ShiftType { get; set; }
         public ShiftStatus Status { get; set; }
         public bool IsOnCall { get; set; }
+        public string? QrToken { get; set; }
         public DateTime CreatedOn { get; set; }
     }
 }

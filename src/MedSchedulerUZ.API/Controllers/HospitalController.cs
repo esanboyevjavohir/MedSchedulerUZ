@@ -20,8 +20,8 @@ namespace MedSchedulerUZ.API.Controllers
         {
             var result = await _hospitalService.CreateAsync(model);
             if (!result.Succedded)
-                return BadRequest(result.Errors);
-            return Ok(result.Result);
+                return BadRequest(result);
+            return Ok(result);
         }
 
         [HttpPut("{id}")]
@@ -30,8 +30,8 @@ namespace MedSchedulerUZ.API.Controllers
         {
             var result = await _hospitalService.UpdateAsync(id, model);
             if (!result.Succedded)
-                return BadRequest(result.Errors);
-            return Ok(result.Result);
+                return BadRequest(result);
+            return Ok(result);
         }
 
         [HttpGet("{id}")]
@@ -41,7 +41,7 @@ namespace MedSchedulerUZ.API.Controllers
             var result = await _hospitalService.GetByIdAsync(id);
             if (!result.Succedded)
                 return NotFound(result.Errors);
-            return Ok(result.Result);
+            return Ok(result);
         }
 
         [HttpGet]
@@ -49,7 +49,7 @@ namespace MedSchedulerUZ.API.Controllers
         public async Task<IActionResult> GetAll()
         {
             var result = await _hospitalService.GetAllAsync();
-            return Ok(result.Result);
+            return Ok(result);
         }
 
         [HttpDelete("{id}")]
@@ -59,7 +59,7 @@ namespace MedSchedulerUZ.API.Controllers
             var result = await _hospitalService.DeleteAsync(id);
             if (!result.Succedded)
                 return NotFound(result.Errors);
-            return Ok(result.Result);
+            return Ok(result);
         }
     }
 }

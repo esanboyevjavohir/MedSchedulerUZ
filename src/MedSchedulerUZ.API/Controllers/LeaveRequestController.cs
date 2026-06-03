@@ -56,6 +56,14 @@ namespace MedSchedulerUZ.API.Controllers
             return Ok(result);
         }
 
+        [HttpGet("GetAll")]
+        [Authorize(Roles = "DeptHead,HospitalAdmin,SuperAdmin")]
+        public async Task<IActionResult> GetAll()
+        {
+            var result = await _leaveRequestService.GetAllAsync();
+            return Ok(result);
+        }
+
         [HttpGet("pending")]
         [Authorize(Roles = "DeptHead,HospitalAdmin,SuperAdmin")]
         public async Task<IActionResult> GetPending()

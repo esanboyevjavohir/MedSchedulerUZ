@@ -60,7 +60,8 @@ namespace MedSchedulerUZ.Application.Services.Implement
                 new CreateLeaveRequestResponseModel { Id = leaveRequest.Id });
         }
 
-        public async Task<ApiResult<UpdateLeaveRequestResponseModel>> RespondAsync(Guid id, Guid approverId, UpdateLeaveRequestModel model)
+        public async Task<ApiResult<UpdateLeaveRequestResponseModel>> RespondAsync(Guid id, Guid approverId, 
+            UpdateLeaveRequestModel model)
         {
             var leaveRequest = await _context.LeaveRequests.FirstOrDefaultAsync(l => l.Id == id);
             if (leaveRequest is null)
@@ -104,6 +105,16 @@ namespace MedSchedulerUZ.Application.Services.Implement
 
             return ApiResult<List<LeaveRequestResponseModel>>.Success(
                 _mapper.Map<List<LeaveRequestResponseModel>>(leaveRequests));
+        }
+
+        public async Task<ApiResult<List<LeaveRequestResponseModel>>> GetAllAsync()
+        {
+            var leaves = await _context.LeaveRequests
+                .Include(l => l.User)
+                .OrderByDescending(l => l.CreatedOn)
+                .ToListAsync();
+            return ApiResult<List<LeaveRequestResponseModel>>.Success(
+                _mapper.Map<List<LeaveRequestResponseModel>>(leaves));
         }
 
         public async Task<ApiResult<List<LeaveRequestResponseModel>>> GetPendingAsync()

@@ -17,7 +17,7 @@ namespace MedSchedulerUZ.API.Controllers
         }
 
         [HttpGet("{id}/qr-token")]
-        [Authorize(Roles = "Employee,DeptHead")]
+        [Authorize(Roles = "Employee,DeptHead,HospitalAdmin,SuperAdmin")]
         public async Task<IActionResult> GetQrToken(Guid id)
         {
             var result = await _shiftService.GetQrTokenAsync(id);
@@ -30,8 +30,18 @@ namespace MedSchedulerUZ.API.Controllers
         {
             var result = await _shiftService.CreateAsync(model);
             if (!result.Succedded)
-                return BadRequest(result.Errors);
-            return Ok(result.Result);
+                return BadRequest(result);
+            return Ok(result);
+        }
+
+        [HttpPost("auto-generate")]
+        [Authorize(Roles = "DeptHead,HospitalAdmin,SuperAdmin")]
+        public async Task<IActionResult> AutoGenerate([FromBody] AutoGenerateShiftModel model)
+        {
+            var result = await _shiftService.AutoGenerateAsync(model);
+            if (!result.Succedded)
+                return BadRequest(result);
+            return Ok(result);
         }
 
         [HttpPut("{id}")]
@@ -40,8 +50,8 @@ namespace MedSchedulerUZ.API.Controllers
         {
             var result = await _shiftService.UpdateAsync(id, model);
             if (!result.Succedded)
-                return BadRequest(result.Errors);
-            return Ok(result.Result);
+                return BadRequest(result);
+            return Ok(result);
         }
 
         [HttpGet("{id}")]
@@ -51,15 +61,15 @@ namespace MedSchedulerUZ.API.Controllers
             var result = await _shiftService.GetByIdAsync(id);
             if (!result.Succedded)
                 return NotFound(result.Errors);
-            return Ok(result.Result);
+            return Ok(result);
         }
 
         [HttpGet]
-        [Authorize(Roles = "HospitalAdmin,SuperAdmin")]
+        [Authorize(Roles = "DeptHead,HospitalAdmin,SuperAdmin")]
         public async Task<IActionResult> GetAll()
         {
             var result = await _shiftService.GetAllAsync();
-            return Ok(result.Result);
+            return Ok(result);
         }
 
         [HttpGet("user/{userId}")]
@@ -73,7 +83,7 @@ namespace MedSchedulerUZ.API.Controllers
                 return Forbid();
 
             var result = await _shiftService.GetByUserIdAsync(userId);
-            return Ok(result.Result);
+            return Ok(result);
         }
 
         [HttpGet("schedule/{scheduleId}")]
@@ -81,7 +91,7 @@ namespace MedSchedulerUZ.API.Controllers
         public async Task<IActionResult> GetBySchedule(Guid scheduleId)
         {
             var result = await _shiftService.GetByScheduleIdAsync(scheduleId);
-            return Ok(result.Result);
+            return Ok(result);
         }
 
         [HttpDelete("{id}")]
@@ -91,7 +101,7 @@ namespace MedSchedulerUZ.API.Controllers
             var result = await _shiftService.DeleteAsync(id);
             if (!result.Succedded)
                 return NotFound(result.Errors);
-            return Ok(result.Result);
+            return Ok(result);
         }
     }
 }

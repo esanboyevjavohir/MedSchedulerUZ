@@ -82,6 +82,18 @@ namespace MedSchedulerUZ.API.Controllers
             return Ok(result);
         }
 
+        [HttpPut("{id}/update-user")]
+        [Authorize(Roles = "SuperAdmin,HospitalAdmin,DeptHead")]
+        public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UpdateUserModel model)
+        {
+            var currentUserId = Guid.Parse(User.FindFirst(CustomClaimNames.Id)!.Value);
+            var currentRole = User.FindFirst(CustomClaimNames.Role)!.Value;
+            var result = await _userService.UpdateUserAsync(currentUserId, currentRole, id, model);
+            if (!result.Succedded)
+                return BadRequest(result);
+            return Ok(result);
+        }
+
         [HttpPut("change-password")]
         [Authorize]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordModel model)

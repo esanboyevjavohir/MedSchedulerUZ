@@ -19,6 +19,8 @@ namespace MedSchedulerUZ.Application.Services.Interface
         Task<ApiResult<bool>> ResetPasswordAsync(ResetPasswordModel model);
         Task<ApiResult<bool>> ChangePasswordAsync(Guid userId, ChangePasswordModel model);
         Task<ApiResult<bool>> UpdateProfileAsync(Guid currentUserId, UpdateProfileModel model);
+        Task<ApiResult<bool>> UpdateUserAsync(Guid currentUserId, string currentRole, 
+            Guid targetId, UpdateUserModel model);
         Task<ApiResult<List<UserResponseModel>>> GetAllAsync(string role, Guid currentUserId);
         Task<ApiResult<bool>> DeleteUserAsync(Guid id);
     }

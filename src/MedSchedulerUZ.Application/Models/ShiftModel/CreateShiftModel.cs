@@ -8,8 +8,8 @@ namespace MedSchedulerUZ.Application.Models.ShiftModel
         public Guid UserId { get; set; }
         public Guid DepartmentId { get; set; }
         public DateTime ShiftDate { get; set; }
-        public TimeSpan StartTime { get; set; }
-        public TimeSpan EndTime { get; set; }
+        public string StartTime { get; set; }
+        public string EndTime { get; set; }
         public ShiftType ShiftType { get; set; }
         public bool IsOnCall { get; set; } = false;
     }

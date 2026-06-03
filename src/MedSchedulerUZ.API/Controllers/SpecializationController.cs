@@ -44,6 +44,14 @@ namespace MedSchedulerUZ.API.Controllers
             return Ok(result);
         }
 
+        [HttpGet("department/{departmentId}")]
+        [Authorize(Roles = "DeptHead,HospitalAdmin,SuperAdmin")]
+        public async Task<IActionResult> GetByDepartment(Guid departmentId)
+        {
+            var result = await _specializationService.GetByDepartmentAsync(departmentId);
+            return Ok(result);
+        }
+
         [HttpGet]
         [Authorize(Roles = "Employee,DeptHead,HospitalAdmin,SuperAdmin")]
         public async Task<IActionResult> GetAll()

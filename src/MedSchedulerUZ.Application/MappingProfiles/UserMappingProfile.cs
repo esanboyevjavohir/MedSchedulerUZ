@@ -24,6 +24,9 @@ namespace MedSchedulerUZ.Application.MappingProfiles
                 .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => true))
                 .ForMember(dest => dest.MustChangePassword, opt => opt.Ignore());
 
+            CreateMap<UpdateUserModel, User>()
+                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+
             CreateMap<User, CreateUserResponseModel>();
         }
     }

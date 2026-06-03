@@ -8,6 +8,7 @@ namespace MedSchedulerUZ.Application.Services.Interface
         Task<ApiResult<string>> GetQrTokenAsync(Guid shiftId);
         Task<ApiResult<CreateShiftResponseModel>> CreateAsync(CreateShiftModel model);
         Task<ApiResult<UpdateShiftResponseModel>> UpdateAsync(Guid id, UpdateShiftModel model);
+        Task<ApiResult<AutoGenerateShiftResponseModel>> AutoGenerateAsync(AutoGenerateShiftModel model);
         Task<ApiResult<ShiftResponseModel>> GetByIdAsync(Guid id);
         Task<ApiResult<List<ShiftResponseModel>>> GetAllAsync();
         Task<ApiResult<List<ShiftResponseModel>>> GetByUserIdAsync(Guid userId);

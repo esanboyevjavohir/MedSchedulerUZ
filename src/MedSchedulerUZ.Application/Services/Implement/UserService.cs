@@ -97,25 +97,6 @@ namespace MedSchedulerUZ.Application.Services.Implement
             if (!_passwordHasher.Verify(user.PasswordHash, loginModel.Password, user.Salt))
                 return ApiResult<LoginResponseModel>.Failure(["Email yoki parol noto'g'ri"]);
 
-            //if (user.MustChangePassword)
-            //{
-            //    return ApiResult<LoginResponseModel>.Success(new LoginResponseModel
-            //    {
-            //        Id = user.Id,
-            //        Email = user.Email,
-            //        MustChangePassword = true
-            //        // AccessToken va RefreshToken berilmaydi
-            //    });
-            //}
-
-            //if (user.RoleType != UserRole.SuperAdmin && !user.MustChangePassword)
-            //{
-            //    var isEmailVerified = user.OtpCodes
-            //        .Any(o => o.Status == OtpCodeStatus.Verified);
-            //    if (!isEmailVerified)
-            //        return ApiResult<LoginResponseModel>.Failure(["Email tasdiqlanmagan"]);
-            //}
-
             var accessToken = _jwtTokenHandler.GenerateAccessToken(user);
             var refreshToken = _jwtTokenHandler.GenerateRefreshToken();
             user.RefreshToken = refreshToken;
@@ -521,6 +502,57 @@ namespace MedSchedulerUZ.Application.Services.Implement
                 _userSettings.OtpExpirationTimeInSeconds - _userSettings.OtpResendTimeInSeconds);
             var waitTime = resendTime - DateTimeOffset.Now;
             return Math.Max(0, (int)waitTime.TotalSeconds);
+        }
+
+        public async Task<ApiResult<bool>> UpdateUserAsync(Guid currentUserId, string currentRole, 
+            Guid targetId, UpdateUserModel model)
+        {
+            var target = await _context.Users.FirstOrDefaultAsync(u => u.Id == targetId);
+            if (target is null)
+                return ApiResult<bool>.Failure(["Foydalanuvchi topilmadi"]);
+
+            // HospitalAdmin tekshiruvi
+            if (currentRole == UserRole.HospitalAdmin.ToString())
+            {
+                var current = await _context.Users.FindAsync(currentUserId);
+                if (target.HospitalId != current!.HospitalId)
+                    return ApiResult<bool>.Failure(["Bu xodimni yangilash huquqingiz yo'q"]);
+                if (target.RoleType == UserRole.SuperAdmin || target.RoleType == UserRole.HospitalAdmin)
+                    return ApiResult<bool>.Failure(["Bu xodimni yangilash huquqingiz yo'q"]);
+            }
+
+            // DeptHead tekshiruvi
+            if (currentRole == UserRole.DeptHead.ToString())
+            {
+                var current = await _context.Users.FindAsync(currentUserId);
+                if (target.DepartmentId != current!.DepartmentId)
+                    return ApiResult<bool>.Failure(["Bu xodimni yangilash huquqingiz yo'q"]);
+                if (target.RoleType != UserRole.Employee)
+                    return ApiResult<bool>.Failure(["Faqat oddiy xodimlarni yangilay olasiz"]);
+            }
+
+            // Hammaga ruxsat — ism va telefon
+            var updateModel = new UpdateUserModel
+            {
+                FullName = model.FullName,
+                PhoneNumber = model.PhoneNumber,
+            };
+
+            // Faqat SuperAdmin qo'shimcha maydonlarni yangilay oladi
+            if (currentRole == UserRole.SuperAdmin.ToString())
+            {
+                updateModel.HospitalId = model.HospitalId;
+                updateModel.DepartmentId = model.DepartmentId;
+                updateModel.SpecializationId = model.SpecializationId;
+                updateModel.RoleType = model.RoleType;
+                updateModel.IsActive = model.IsActive;
+            }
+
+            _mapper.Map(updateModel, target);
+
+            target.UpdatedOn = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            return ApiResult<bool>.Success(true);
         }
     }
 }

@@ -7,6 +7,7 @@
         public string? PhoneNumber { get; set; }
         public bool IsActive { get; set; }
         public string RoleType { get; set; } = null!;
+        public Guid? SpecializationId { get; set; }
         public string? SpecializationName { get; set; }
         public Guid? HospitalId { get; set; }    
         public string? HospitalName { get; set; } // (optional, foydali)

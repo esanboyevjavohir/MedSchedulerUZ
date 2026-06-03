@@ -26,7 +26,8 @@ namespace MedSchedulerUZ.Application.Services.Implement
                 return ApiResult<CreateDepartmentResponseModel>.Failure(["Kasalxona topilmadi"]);
 
             var exists = await _context.Departments
-                .AnyAsync(d => d.Name == model.Name && d.HospitalId == model.HospitalId);
+                .AnyAsync(d => EF.Functions.ILike(d.Name, model.Name)
+                           && d.HospitalId == model.HospitalId);
             if (exists)
                 return ApiResult<CreateDepartmentResponseModel>.Failure(["Bu nomli bo'lim allaqachon mavjud"]);
 
