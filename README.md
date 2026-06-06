@@ -1,25 +1,77 @@
 # MedSchedulerUZ — Backend
 
-> A hospital/clinic schedule management system built with ASP.NET Core and PostgreSQL.
+> A comprehensive hospital staff scheduling and workforce management system built with ASP.NET Core (.NET 8) and PostgreSQL, following Clean Architecture principles.
 
 ---
 
 ## 📋 About the Project
 
-**MedSchedulerUZ** is a web-based scheduling platform designed for hospitals and clinics in Uzbekistan. It enables administrators to manage doctor schedules, track shift statuses, and publish timetables — all through a clean REST API.
+**MedSchedulerUZ** is a production-ready REST API designed for hospitals and clinics in Uzbekistan. The platform enables multi-level management of doctor schedules, shift assignments, attendance tracking via QR codes, leave requests, and staff certifications — all under a role-based access control system.
 
-This repository contains the **backend** (API) of the project. The frontend is available here: [MedSchedulerUZ-Client](https://github.com/esanboyevjavohir/MedSchedulerUZ-Client)
+This repository contains the **backend (API)** of the project. The frontend is available here: [MedSchedulerUZ-Client](https://github.com/esanboyevjavohir/MedSchedulerUZ-Client)
 
 ---
 
-## ✨ Features
+## ✨ Key Features
 
-- 🔐 JWT-based authentication and role-based authorization
-- 👨‍⚕️ Doctor and department management
-- 📅 Schedule creation, publishing, archiving
-- 🔍 Filter schedules by status (Draft, Published, Archived)
-- 📄 RESTful API with full CRUD operations
-- 🗄️ PostgreSQL database with Entity Framework Core
+- 🔐 **JWT Authentication** with Refresh Token support and role-based authorization (4 roles)
+- 🏥 **Multi-level Hierarchy** — SuperAdmin → HospitalAdmin → DeptHead → Employee
+- 📅 **Schedule Management** — create weekly schedules with Draft / Published / Archived lifecycle
+- ⚡ **Auto-generate Shifts** — automatically assign shifts for an entire week by department
+- 📲 **QR Code Attendance** — each shift has a unique QR token; employees clock in/out by scanning
+- 🔄 **Shift Swap Requests** — employees can request shift swaps, approved by management
+- 🏖️ **Leave Request System** — submit and approve/reject leave requests (Sick, Vacation, etc.)
+- 🎓 **Certification Tracking** — track staff certifications with automatic expiry notifications
+- 🔔 **Notification System** — in-app notifications for key events
+- 🔒 **MustChangePassword Middleware** — forces first-login password change
+- ⏰ **Background Service** — daily automated check for expiring certifications
+- 📧 **Email Service** — OTP codes and password reset via email
+- ✅ **FluentValidation** — request validation on all user inputs
+
+---
+
+## 🏗️ Architecture
+
+The project follows **Clean Architecture** with 4 layers:
+
+```
+MedSchedulerUZ/
+├── MedSchedulerUZ.API/            # Presentation layer
+│   ├── Controllers/               # REST API endpoints (12 controllers)
+│   ├── Middlewares/               # ExceptionHandler, MustChangePassword
+│   └── Program.cs
+│
+├── MedSchedulerUZ.Application/   # Business logic layer
+│   ├── Services/Implement/        # Service implementations (12 services)
+│   ├── Services/Interface/        # Service interfaces
+│   ├── Services/Background/       # CertificationExpiryBackgroundService
+│   ├── Models/                    # Request/Response DTOs
+│   ├── MappingProfiles/           # AutoMapper profiles
+│   ├── Validators/                # FluentValidation validators
+│   ├── Helpers/GenerateJWT/       # JWT token generation & password hashing
+│   └── Email/                     # Email service configuration
+│
+├── MedSchedulerUZ.Core/           # Domain layer
+│   ├── Entities/                  # Domain entities (13 entities)
+│   ├── Enums/                     # Domain enumerations
+│   └── Common/                    # BaseEntity, IAuditedEntity
+│
+└── MedSchedulerUZ.DataAccess/     # Infrastructure layer
+    ├── Persistence/               # DatabaseContext, AutomatedMigration
+    ├── Configurations/            # EF Core entity configurations
+    └── Migrations/                # Database migrations
+```
+
+---
+
+## 👥 Role System
+
+| Role | Access |
+|---|---|
+| **SuperAdmin** | Manages all hospitals and their data |
+| **HospitalAdmin** | Manages their own hospital, departments, and staff |
+| **DeptHead** | Manages their department's schedules and shifts |
+| **Employee** | Views own schedule, submits leave requests, clocks in/out via QR |
 
 ---
 
@@ -31,8 +83,12 @@ This repository contains the **backend** (API) of the project. The frontend is a
 | Language | C# |
 | Database | PostgreSQL |
 | ORM | Entity Framework Core |
-| Authentication | JWT (JSON Web Tokens) |
+| Authentication | JWT + Refresh Tokens |
+| Mapping | AutoMapper |
+| Validation | FluentValidation |
 | API Docs | Swagger / OpenAPI |
+| Email | SMTP Email Service |
+| Background Jobs | IHostedService (BackgroundService) |
 
 ---
 
@@ -53,40 +109,26 @@ cd MedSchedulerUZ
 # Restore dependencies
 dotnet restore
 
-# Update database connection string in appsettings.json
-# "ConnectionStrings": { "DefaultConnection": "Host=...;Database=...;Username=...;Password=..." }
+# Configure appsettings.json
+# Set your PostgreSQL connection string:
+# "ConnectionStrings": {
+#   "DefaultConnection": "Host=localhost;Database=MedSchedulerUZ;Username=...;Password=..."
+# }
 
-# Apply migrations
-dotnet ef database update
+# Apply migrations (auto-runs on startup via AutomatedMigration)
+dotnet ef database update --project src/MedSchedulerUZ.DataAccess
 
 # Run the project
-dotnet run
+dotnet run --project src/MedSchedulerUZ.API
 ```
 
-The API will be available at `https://localhost:5001` and Swagger UI at `https://localhost:5001/swagger`.
-
----
-
-## 📁 Project Structure
-
-```
-MedSchedulerUZ/
-├── src/
-│   ├── Controllers/       # API endpoints
-│   ├── Models/            # Entity models
-│   ├── DTOs/              # Data transfer objects
-│   ├── Services/          # Business logic
-│   ├── Repositories/      # Data access layer
-│   └── Migrations/        # EF Core migrations
-├── MedSchedulerUZ.sln
-└── README.md
-```
+Swagger UI will be available at: `https://localhost:5001/swagger`
 
 ---
 
 ## 📸 Screenshots
 
-### Backend swagger-document
+### 📋 Backend Swagger API Documentation
 <img width="1034" height="912" alt="image" src="https://github.com/user-attachments/assets/529caf40-d379-4a95-9b0e-bf510d85496a" />
 
 <img width="901" height="912" alt="image" src="https://github.com/user-attachments/assets/43230eae-ba2e-4277-ba56-bea14979aef3" />
