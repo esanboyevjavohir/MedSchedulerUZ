@@ -86,13 +86,11 @@ MedSchedulerUZ/
 
 ## 📸 Screenshots
 
-<!-- Add your screenshots here -->
-<!-- Example:
-![Dashboard](assets/dashboard.png)
-![Schedules](assets/schedules.png)
--->
-
-*Screenshots coming soon*
+### Backend swagger-document
+<img width="1034" height="912" alt="image" src="https://github.com/user-attachments/assets/529caf40-d379-4a95-9b0e-bf510d85496a" />
+<img width="901" height="912" alt="image" src="https://github.com/user-attachments/assets/43230eae-ba2e-4277-ba56-bea14979aef3" />
+<img width="994" height="882" alt="image" src="https://github.com/user-attachments/assets/189a9720-d68a-4510-815d-fb50ab1d7d71" />
+<img width="1450" height="898" alt="image" src="https://github.com/user-attachments/assets/a3fb7004-2837-437b-a534-f81a72392c2c" />
 
 ---
 
